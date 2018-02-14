@@ -22,9 +22,9 @@ class CryptoLabelsExtractor:
                 continue
             diff = row.open - lastPrice
             if diff > 0.0:
-                variationList.append(2)
-            elif diff == 0.0:
                 variationList.append(1)
+            # elif diff == 0.0:
+            #     variationList.append(1)
             else:
                 variationList.append(0)
             lastPrice = row.open

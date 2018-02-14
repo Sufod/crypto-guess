@@ -14,6 +14,14 @@ class CryptoFeaturesExtractor:
                 new_features[column_name+"_at_-_"+str(j)] = column.shift(j)
         return new_features
 
+    # def build_sequence_features(self, features, window_size):
+    #     sequence_features = pd.DataFrame()
+    #     for column_name, column in features.items():
+    #         sequence_features[column_name]=
+    #         for j in range(0, window_size+1):
+    #             sequence_features[column_name].append(column.shift(j))
+    #     return sequence_features
+
     def remove_rows_from_labels(self, labels, window_size):
         if isinstance(labels, tuple):
             newLabels = []

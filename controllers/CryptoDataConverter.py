@@ -47,12 +47,15 @@ class CryptoDataConverter:
         labels = self.crypto_labels_extractor.compute_labels([
             lambda: self.crypto_labels_extractor.compute_variation_sign(corpus),
             lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 1),
-            lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 5),
+            lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 2),
             lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 0)
 
         ])
+
+
         features = self.crypto_features_extractor.compute_additionnal_features([
-            lambda: self.crypto_features_extractor.add_feature_history_window_mlp(corpus, 1)
+            lambda: self.crypto_features_extractor.add_feature_history_window_mlp(corpus, 2)
+            # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
         ])
 
         self.resize_dataframes(corpus, features, labels)

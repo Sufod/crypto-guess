@@ -32,17 +32,16 @@ class CryptoModel:
         metrics = {}
         loss = None
         for label_name in params['task_params'].keys():
-#
             label_params = params['task_params'][label_name]
+
             if label_params['nb_classes'] == 1:
                 # Compute regression predictions.
-                label_params = params['task_params'][label_name]
-                if label_params['output_units'] > 0:
-                    out = tf.layers.dense(net_in, label_params['output_units'],
-                                          activation=label_params['output_activations'],
-                                          kernel_initializer=initializer)
+                if label_params['output_units'] is not None:
+                    out = tf.identity(net_in)
+                    for units, activ in zip(label_params['output_units'], label_params['output_activations']):
+                        out = tf.layers.dense(out, units=units, activation=activ, kernel_initializer=initializer)
                     outputs[label_name] = tf.reshape(tf.layers.dense(out, 1, activation=None,
-                                                                     kernel_initializer=initializer),[-1])
+                                                                     kernel_initializer=initializer), [-1])
                 else:
                     outputs[label_name] = tf.reshape(tf.layers.dense(net_in, 1, activation=None,
                                                                    kernel_initializer=initializer), [-1])
@@ -50,10 +49,10 @@ class CryptoModel:
                 predictions['regressions_' + label_name] = outputs[label_name]
             else:
                 # Compute classification predictions.
-                if label_params['output_units'] > 0:
-                    out = tf.layers.dense(net_in, label_params['output_units'],
-                                          activation=label_params['output_activations'],
-                                          kernel_initializer=initializer)
+                if label_params['output_units'] is not None:
+                    out = tf.identity(net_in)
+                    for units, activ in zip(label_params['output_units'], label_params['output_activations']):
+                        out = tf.layers.dense(out, units=units, activation=activ, kernel_initializer=initializer)
                     outputs[label_name] = tf.layers.dense(out, label_params['nb_classes'],
                                                           activation=None,kernel_initializer=initializer)
                 else:
@@ -67,16 +66,19 @@ class CryptoModel:
         if mode == tf.estimator.ModeKeys.PREDICT:
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
-        for label_name, label in labels.items():
+        for label_name in params['task_params'].keys():
             label_params = params['task_params'][label_name]
+
             if label_params['nb_classes'] == 1:
                 # Compute regress loss.
                 if loss is not None:
-                    loss = loss + tf.losses.mean_squared_error(labels=label, predictions=outputs[label_name])
+                    loss = loss + label_params['weight']*tf.losses.mean_squared_error(labels=labels[label_name],
+                                                               predictions=outputs[label_name])
                 else:
-                    loss = tf.losses.mean_squared_error(labels=label, predictions=outputs[label_name])
+                    loss = label_params['weight']*tf.losses.mean_squared_error(labels=labels[label_name],
+                                                        predictions=outputs[label_name])
                 # Compute evaluation metrics.
-                mse = tf.metrics.mean_squared_error(labels=tf.cast(label, tf.float32),
+                mse = tf.metrics.mean_squared_error(labels=tf.cast(labels[label_name], tf.float32),
                                                     predictions=outputs[label_name],
                                                     name='mse_op_' + label_name)
                 metrics['mse_' + label_name] = mse
@@ -84,11 +86,13 @@ class CryptoModel:
             else:
                 # Compute class loss.
                 if loss is not None:
-                    loss = loss + tf.losses.sparse_softmax_cross_entropy(labels=label, logits=outputs[label_name])
+                    loss = loss + label_params['weight']*tf.losses.sparse_softmax_cross_entropy(labels=labels[label_name],
+                                                                         logits=outputs[label_name])
                 else:
-                    loss = tf.losses.sparse_softmax_cross_entropy(labels=label, logits=outputs[label_name])
+                    loss = label_params['weight']*tf.losses.sparse_softmax_cross_entropy(labels=labels[label_name],
+                                                                  logits=outputs[label_name])
                 # Compute evaluation metrics.
-                accuracy = tf.metrics.accuracy(labels=tf.cast(label, tf.int32),
+                accuracy = tf.metrics.accuracy(labels=tf.cast(labels[label_name], tf.int32),
                                                predictions=tf.argmax(outputs[label_name], 1),
                                                name='acc_op_' + label_name)
                 metrics['accuracy_' + label_name] = accuracy
@@ -99,6 +103,13 @@ class CryptoModel:
 
         # Create training op.
         assert mode == tf.estimator.ModeKeys.TRAIN
-        optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
+
+        if params['optimizer'] == "RMSProp":
+            optimizer = tf.train.RMSPropOptimizer(learning_rate=params['learning_rate'])
+        elif params['optimizer'] == "Adagrad":
+            optimizer = tf.train.AdagradOptimizer(learning_rate=params['learning_rate'])
+        else:
+            optimizer = tf.train.GradientDescentOptimizer(learning_rate=params['learning_rate'])
+
         train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
         return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)

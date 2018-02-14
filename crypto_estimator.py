@@ -27,26 +27,53 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=100, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
-        'init_scale': 0.01,
-        'hidden_units': [32, 64, 32],
-        #'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
-        'hidden_activations': [None, None, None],
-        'output_units': [16, 16, 16, 16],
-        #'output_activations': [tf.nn.tanh, tf.nn.tanh, tf.nn.tanh, tf.nn.tanh],
-        'output_activations': [None, None, None, None],
-        'dropout_rate': [0.0, 0.0, 0.0],
+        'optimizer': "SGD",
         'learning_rate': 0.01,
-        'n_tasks': 4,
-        'n_classes': [3,1,1,1],
+        'batch_size': 100,
+        'init_scale': 0.01,
+        'hidden_units': [128, 64, 32],
+        'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
+        'dropout_rate': [0.0, 0.0, 0.0],
+        'task_params':
+            {
+            'l_variation_sign':
+                {
+                'output_units': None,
+                'output_activations': [None],
+                'nb_classes': 4,
+                'weight': 0
+                },
+            'l_price_at_1':
+                {
+                'output_units': [16, 8],
+                'output_activations': [tf.nn.relu, tf.nn.relu],
+                'nb_classes': 1,
+                'weight': 1
+                },
+            'l_price_at_2':
+                {
+                'output_units': [16, 8],
+                'output_activations': [tf.nn.relu, tf.nn.relu],
+                'nb_classes': 1,
+                'weight': 1
+                },
+            'l_price_at_0':
+                {
+                'output_units': None,
+                'output_activations': [None],
+                'nb_classes': 1,
+                'weight': 0
+                }
             }
+    }
 
-    model=CryptoModel()
-    network=CryptoBrain()
-    network.run(args.batch_size,args.num_steps,args.train_steps,model,params)
+    model = CryptoModel()
+    network = CryptoBrain()
+    network.run(args.batch_size, args.num_steps, args.train_steps, model, params)
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
