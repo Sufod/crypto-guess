@@ -2,6 +2,9 @@ import tensorflow as tf
 
 from tensorflow.contrib import layers
 
+from tasks.ClassificationTask import ClassificationTask
+from tasks.RegressionTask import RegressionTask
+
 
 class CryptoModel:
     def model_fn(self, features, labels, mode, params):
