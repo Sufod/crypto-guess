@@ -16,7 +16,7 @@ class ClassificationTask:
         return self._output_units
 
     @property
-    def output_activation(self):
+    def output_activations(self):
         return self._output_activations
 
     @property

@@ -2,6 +2,7 @@ import pandas as pd
 
 from controllers.CryptoDataConverter import CryptoDataConverter
 from controllers.CryptoDataLoader import CryptoDataLoader
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -11,13 +12,15 @@ from tensorflow.python.ops import lookup_ops
 
 
 class CryptoBrain:
-    crypto_data_loader = CryptoDataLoader()
-    crypto_data_converter = CryptoDataConverter()
+    data_loader = CryptoDataLoader()
 
     def run(self, model, params):
         # Fetch the data
-        corpus = self.crypto_data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-train.csv")
-        features, labels = self.crypto_data_converter.generate_features_and_labels(corpus)
+        corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-train.csv")
+        data_converter = CryptoDataConverter(corpus)
+
+        features, labels = data_converter.generate_features_and_labels(params)
+
         features = pd.concat([features, corpus], axis=1)
 
         # Feature columns describe how to use the input.
@@ -33,12 +36,12 @@ class CryptoBrain:
         params['batch_size'] = 1000
         params['train_steps'] = 5000
         classifier.train(
-            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, params['batch_size']),
+            input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
             steps=params['train_steps'])
         # for task in range(params['n_tasks']):
         #    if params['n_classes'][task] == 1:
         predictions = classifier.predict(
-            input_fn=lambda: self.crypto_data_converter.eval_input_fn(features, labels=None, batch_size=1))
+            input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
         self.show_prediction_graph(predictions, labels)
 
         # Re-Train the model.
@@ -46,20 +49,21 @@ class CryptoBrain:
         params['batch_size'] = 1
         params['train_steps'] = 50000
         classifier.train(
-            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, params['batch_size']),
+            input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
             steps=params['train_steps'])
         # for task in range(params['n_tasks']):
         #    if params['n_classes'][task] == 1:
         predictions = classifier.predict(
-            input_fn=lambda: self.crypto_data_converter.eval_input_fn(features, labels=None, batch_size=1))
+            input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
         self.show_prediction_graph(predictions, labels)
 
         # Evaluate the model.
-        corpus = self.crypto_data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-test.csv")
-        features, labels = self.crypto_data_converter.generate_features_and_labels(corpus)
+        corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-test.csv")
+        data_converter = CryptoDataConverter(corpus)
+        features, labels = data_converter.generate_features_and_labels(params)
         features = pd.concat([features, corpus], axis=1)
         eval_result = classifier.evaluate(
-            input_fn=lambda: self.crypto_data_converter.eval_input_fn(features, labels, 1))
+            input_fn=lambda: data_converter.eval_input_fn(features, labels, 1))
 
         if params['task_params']['l_price_at_0']['weight'] != 0:
             print('\nTest set  0 mse: {mse_l_price_at_0:0.3f}\n'.format(**eval_result))
@@ -75,7 +79,7 @@ class CryptoBrain:
         # for task in range(params['n_tasks']):
         #    if params['n_classes'][task] == 1:
         predictions = classifier.predict(
-            input_fn=lambda: self.crypto_data_converter.eval_input_fn(features, labels=None, batch_size=1))
+            input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
         self.show_prediction_graph(predictions, labels)
 
         # predictions = classifier.predict(
@@ -92,7 +96,8 @@ class CryptoBrain:
         lst_predict_2 = []
         lst_expect_1 = []
         lst_expect_2 = []
-        for pred_dict, expect_regress_1, expect_regress_2 in zip(predictions, labels['l_price_at_1'], labels['l_price_at_0']):
+        for pred_dict, expect_regress_1, expect_regress_2 in zip(predictions, labels['l_price_at_1'],
+                                                                 labels['l_price_at_0']):
             lst_predict_1.append(pred_dict['regressions_l_price_at_1'])
             lst_predict_2.append(pred_dict['regressions_l_price_at_2'])
             lst_expect_1.append(expect_regress_1)
@@ -114,4 +119,3 @@ class CryptoBrain:
     #     plt.plot(lst_predict_2, label="predict_l_price_at_5")
     #     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     #     plt.show()
-

@@ -1,6 +1,6 @@
 class CryptoFeaturesPreprocessor:
 
-    def preprocess_features(self,features):
+    def preprocess_features(self, features):
         self.remove_unwanted_features(features)
         self.normalize_features(features)
 
@@ -8,7 +8,7 @@ class CryptoFeaturesPreprocessor:
         # Remove time
         del (features['time'])
 
-    def normalize_features(self,features):
+    def normalize_features(self, features):
         features['open'] = features['open'] * 0.01
         features['close'] = features['close'] * 0.01
         features['low'] = features['low'] * 0.01

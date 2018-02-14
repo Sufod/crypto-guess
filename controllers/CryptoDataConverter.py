@@ -1,16 +1,18 @@
 import tensorflow as tf
+import pandas as pd
 
-from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
 from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
-from extractors.CryptoLabelsExtractor import CryptoLabelsExtractor
+from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
+
 from controllers.CryptoUtils import CryptoUtils
 
 
 class CryptoDataConverter:
     features_preprocessor = CryptoFeaturesPreprocessor()
-    labels_extractor = CryptoLabelsExtractor()
     features_extractor = CryptoFeaturesExtractor()
 
+    def __init__(self, corpus):
+        self.corpus = corpus
 
     def train_input_fn(self, features, labels, batch_size):
         """An input function for training"""
@@ -44,23 +46,22 @@ class CryptoDataConverter:
         # Return the dataset.
         return dataset
 
-    def generate_features_and_labels(self, corpus):
+    def perform(self, fun, *args):
+        test = fun(*args)
+        return fun(*args)
 
-        self.features_preprocessor.preprocess_features(corpus)
+    def generate_features_and_labels(self, params):
+        self.features_preprocessor.preprocess_features(self.corpus)
 
-        labels = CryptoUtils.compute_labels([
-            lambda: self.labels_extractor.compute_variation_sign(corpus),
-            lambda: self.labels_extractor.compute_next_price_at(corpus, 1),
-            lambda: self.labels_extractor.compute_next_price_at(corpus, 2),
-            lambda: self.labels_extractor.compute_next_price_at(corpus, 0)
-
-        ])
+        labels = pd.DataFrame()
+        for task_name, task in params["tasks"].items():
+            labels = pd.concat([labels, self.perform(task.generate_method, (task_name, self.corpus))], axis=1)
 
         features = CryptoUtils.compute_additionnal_features([
-            lambda: self.features_extractor.add_feature_history_window_mlp(corpus, 2)
+            lambda: self.features_extractor.add_feature_history_window_mlp(self.corpus, 2)
             # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
         ])
 
-        CryptoUtils.resize_dataframes(corpus, features, labels)
+        CryptoUtils.resize_dataframes(self.corpus, features, labels)
 
         return features, labels

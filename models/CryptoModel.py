@@ -16,7 +16,7 @@ class CryptoModel:
 
         initializer = tf.random_uniform_initializer(-params['init_scale'], params['init_scale'])
 
-        #sequence_input = layers.sequence_input_from_feature_columns(
+        # sequence_input = layers.sequence_input_from_feature_columns(
         #    columns_to_tensors=features,
         #    feature_columns=params['feature_columns'])
 
@@ -24,7 +24,8 @@ class CryptoModel:
         net_in = tf.feature_column.input_layer(features, params['feature_columns'])
 
         # Hidden Layer
-        for units, activ, drop_rate in zip(params['hidden_units'], params['hidden_activations'], params['dropout_rate']):
+        for units, activ, drop_rate in zip(params['hidden_units'], params['hidden_activations'],
+                                           params['dropout_rate']):
             net_in = tf.layers.dense(net_in, units=units, activation=activ, kernel_initializer=initializer)
             if drop_rate > 0.0:
                 net_in = tf.layers.dropout(net_in, rate=drop_rate, training=is_training)
@@ -45,10 +46,10 @@ class CryptoModel:
                     for units, activ in zip(current_task.output_units, current_task.output_activations):
                         out = tf.layers.dense(out, units=units, activation=activ, kernel_initializer=initializer)
                     outputs[task_name] = tf.reshape(tf.layers.dense(out, 1, activation=None,
-                                                                     kernel_initializer=initializer), [-1])
+                                                                    kernel_initializer=initializer), [-1])
                 else:
                     outputs[task_name] = tf.reshape(tf.layers.dense(net_in, 1, activation=None,
-                                                                   kernel_initializer=initializer), [-1])
+                                                                    kernel_initializer=initializer), [-1])
                 # Compute predicts.
                 predictions['regressions_' + task_name] = outputs[task_name]
 
@@ -60,14 +61,14 @@ class CryptoModel:
                     for units, activ in zip(current_task.output_units, current_task.output_activations):
                         out = tf.layers.dense(out, units=units, activation=activ, kernel_initializer=initializer)
                     outputs[task_name] = tf.layers.dense(out, current_task.nb_classes,
-                                                          activation=None,kernel_initializer=initializer)
+                                                         activation=None, kernel_initializer=initializer)
                 else:
                     outputs[task_name] = tf.layers.dense(net_in, current_task.nb_classes,
-                                                          activation=None, kernel_initializer=initializer)
+                                                         activation=None, kernel_initializer=initializer)
                 # Compute predicts.
                 predicted_classes = tf.argmax(outputs[task_name], 1)
                 predictions['class_ids_' + task_name] = predicted_classes[:, tf.newaxis]
-                predictions['probabilities_' + task_name]=tf.nn.softmax(outputs[task_name])
+                predictions['probabilities_' + task_name] = tf.nn.softmax(outputs[task_name])
 
         if mode == tf.estimator.ModeKeys.PREDICT:
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
@@ -78,11 +79,11 @@ class CryptoModel:
             if isinstance(current_task, RegressionTask):
                 # Compute regress loss.
                 if loss is not None:
-                    loss = loss + current_task.weight*tf.losses.mean_squared_error(labels=labels[task_name],
-                                                               predictions=outputs[task_name])
+                    loss = loss + current_task.weight * tf.losses.mean_squared_error(labels=labels[task_name],
+                                                                                     predictions=outputs[task_name])
                 else:
-                    loss = current_task.weight*tf.losses.mean_squared_error(labels=labels[task_name],
-                                                        predictions=outputs[task_name])
+                    loss = current_task.weight * tf.losses.mean_squared_error(labels=labels[task_name],
+                                                                              predictions=outputs[task_name])
                 # Compute evaluation metrics.
                 mse = tf.metrics.mean_squared_error(labels=tf.cast(labels[task_name], tf.float32),
                                                     predictions=outputs[task_name],
@@ -93,11 +94,12 @@ class CryptoModel:
             elif isinstance(current_task, ClassificationTask):
                 # Compute class loss.
                 if loss is not None:
-                    loss = loss + current_task.weight*tf.losses.sparse_softmax_cross_entropy(labels=labels[task_name],
-                                                                         logits=outputs[task_name])
+                    loss = loss + current_task.weight * tf.losses.sparse_softmax_cross_entropy(labels=labels[task_name],
+                                                                                               logits=outputs[
+                                                                                                   task_name])
                 else:
-                    loss = current_task.weight*tf.losses.sparse_softmax_cross_entropy(labels=labels[task_name],
-                                                                  logits=outputs[task_name])
+                    loss = current_task.weight * tf.losses.sparse_softmax_cross_entropy(labels=labels[task_name],
+                                                                                        logits=outputs[task_name])
                 # Compute evaluation metrics.
                 accuracy = tf.metrics.accuracy(labels=tf.cast(labels[task_name], tf.int32),
                                                predictions=tf.argmax(outputs[task_name], 1),

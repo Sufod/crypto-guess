@@ -2,12 +2,16 @@ import pandas as pd
 
 from controllers.CryptoUtils import CryptoUtils
 
+
 class CryptoLabelsExtractor:
 
-    def compute_variation_sign(self, features):
+    def compute_variation_sign(self, args):
+
+        corpus, task_name = CryptoUtils.get_corpus_and_task_name_from_args(args)
+
         variationList = []
         lastPrice = 0
-        for i, row in enumerate(features.itertuples()):
+        for i, row in enumerate(corpus.itertuples()):
             if i == 0:
                 lastPrice = row.open
                 continue
@@ -19,7 +23,7 @@ class CryptoLabelsExtractor:
             else:
                 variationList.append(0)
             lastPrice = row.open
-        return CryptoUtils.transform_list_to_df('l_variation_sign',variationList)
+        return CryptoUtils.transform_list_to_df(task_name, variationList)
 
     def compute_current_price(self, features):
         openList = []
@@ -36,10 +40,11 @@ class CryptoLabelsExtractor:
         labels = pd.Series(data=openList)
         return labels
 
-    def compute_next_price_at(self, features, nb):
+    def compute_next_price_at(self, nb, args):
+        corpus, task_name = CryptoUtils.get_corpus_and_task_name_from_args(args)
         future_prices = []
-        for i, sample in enumerate(features.itertuples()):
+        for i, sample in enumerate(corpus.itertuples()):
             if i < nb:
                 continue
             future_prices.append(sample.open)
-        return CryptoUtils.transform_list_to_df('l_price_at_' + str(nb),future_prices)
+        return CryptoUtils.transform_list_to_df(task_name, future_prices)
