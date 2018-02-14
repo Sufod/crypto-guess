@@ -19,8 +19,10 @@ from __future__ import print_function
 import argparse
 import tensorflow as tf
 
-from controllers.CryptoBrain import CryptoBrain
-from models.CryptoModel import CryptoModel
+from controllers.CryptoBrain import CryptoBrain as crypto_brain
+from models.CryptoModel import CryptoModel as crypto_model
+from tasks.ClassificationTask import ClassificationTask
+from tasks.RegressionTask import RegressionTask
 
 
 def main(argv):
@@ -30,6 +32,15 @@ def main(argv):
     parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
+    tasks_list = [
+        ClassificationTask("l_variation_sign", weight=0),
+        RegressionTask("l_price_at_1")
+    ]
+
+    tasks = {}
+    for task in tasks_list:
+        tasks[task.name] = task
+
     params = {
         'optimizer': "SGD",
         'learning_rate': 0.01,
@@ -38,42 +49,11 @@ def main(argv):
         'hidden_units': [128, 64, 32],
         'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
         'dropout_rate': [0.0, 0.0, 0.0],
-        'task_params':
-            {
-            'l_variation_sign':
-                {
-                'output_units': None,
-                'output_activations': [None],
-                'nb_classes': 4,
-                'weight': 0
-                },
-            'l_price_at_1':
-                {
-                'output_units': [16, 8],
-                'output_activations': [tf.nn.relu, tf.nn.relu],
-                'nb_classes': 1,
-                'weight': 1
-                },
-            'l_price_at_2':
-                {
-                'output_units': [16, 8],
-                'output_activations': [tf.nn.relu, tf.nn.relu],
-                'nb_classes': 1,
-                'weight': 1
-                },
-            'l_price_at_0':
-                {
-                'output_units': None,
-                'output_activations': [None],
-                'nb_classes': 1,
-                'weight': 0
-                }
-            }
+        'tasks': tasks
     }
 
-    model = CryptoModel()
-    network = CryptoBrain()
-    network.run(args.batch_size, args.num_steps, args.train_steps, model, params)
+    crypto_brain.run(args.batch_size, args.num_steps, args.train_steps, crypto_model, params)
+
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)

@@ -113,3 +113,4 @@ class CryptoBrain:
     #     plt.plot(lst_predict_2, label="predict_l_price_at_5")
     #     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     #     plt.show()
+

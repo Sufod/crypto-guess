@@ -1,15 +1,12 @@
 import tensorflow as tf
 
-from controllers.CryptoFeaturesExtractor import CryptoFeaturesExtractor
-from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
-from controllers.CryptoLabelsExtractor import CryptoLabelsExtractor
+from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor as crypto_features_extractor
+from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor as crypto_features_preprocessor
+from extractors.CryptoLabelsExtractor import CryptoLabelsExtractor as crypto_labels_extractor
+from controllers.CryptoUtils import CryptoUtils
 
 
 class CryptoDataConverter:
-    crypto_features_extractor = CryptoFeaturesExtractor()
-    crypto_labels_extractor = CryptoLabelsExtractor()
-    crypto_features_preprocessor = CryptoFeaturesPreprocessor()
-
     def train_input_fn(self, features, labels, batch_size):
         """An input function for training"""
 
@@ -43,33 +40,22 @@ class CryptoDataConverter:
         return dataset
 
     def generate_features_and_labels(self, corpus):
-        self.crypto_features_preprocessor.preprocess_features(corpus)
-        labels = self.crypto_labels_extractor.compute_labels([
-            lambda: self.crypto_labels_extractor.compute_variation_sign(corpus),
-            lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 1),
-            lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 2),
-            lambda: self.crypto_labels_extractor.compute_next_price_at(corpus, 0)
+        crypto_features_preprocessor.preprocess_features(corpus)
+
+        labels = CryptoUtils.compute_labels([
+            lambda: crypto_labels_extractor.compute_variation_sign(corpus),
+            lambda: crypto_labels_extractor.compute_next_price_at(corpus, 1),
+            lambda: crypto_labels_extractor.compute_next_price_at(corpus, 2),
+            lambda: crypto_labels_extractor.compute_next_price_at(corpus, 0)
 
         ])
 
 
-        features = self.crypto_features_extractor.compute_additionnal_features([
-            lambda: self.crypto_features_extractor.add_feature_history_window_mlp(corpus, 2)
+        features = CryptoUtils.compute_additionnal_features([
+            lambda: crypto_features_extractor.add_feature_history_window_mlp(corpus, 2)
             # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
         ])
 
         self.resize_dataframes(corpus, features, labels)
 
         return features, labels
-
-    def resize_dataframes(self, corpus, features, labels):
-        labels_size = labels.shape[0]
-        corpus.drop(range(labels_size, corpus.shape[0]), inplace=True)
-        features.drop(range(labels_size, features.shape[0]), inplace=True)
-        top_index = -1
-        for column_name, column in features.items():
-            top_index = max(top_index, column.first_valid_index())
-        if top_index > 0:
-            corpus.drop(range(0, top_index), inplace=True)
-            features.drop(range(0, top_index), inplace=True)
-            labels.drop(range(0, top_index), inplace=True)

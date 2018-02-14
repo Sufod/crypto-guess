@@ -4,12 +4,9 @@ from controllers.CryptoUtils import CryptoUtils
 
 class CryptoFeaturesExtractor:
 
-    def compute_additionnal_features(self, method_list):
-        return CryptoUtils.compute_methods(method_list,cut_mode=False)
-
-    def add_feature_history_window_mlp(self, features, window_size):
+    def add_feature_history_window_mlp(self, corpus, window_size):
         new_features = pd.DataFrame()
-        for column_name, column in features.items():
+        for column_name, column in corpus.items():
             for j in range(1,window_size+1):
                 new_features[column_name+"_at_-_"+str(j)] = column.shift(j)
         return new_features
@@ -21,16 +18,6 @@ class CryptoFeaturesExtractor:
     #         for j in range(0, window_size+1):
     #             sequence_features[column_name].append(column.shift(j))
     #     return sequence_features
-
-    def remove_rows_from_labels(self, labels, window_size):
-        if isinstance(labels, tuple):
-            newLabels = []
-            for i, label in enumerate(labels):
-                newLabels.append(label[window_size:].reset_index(drop=True))
-            labels = tuple(newLabels)
-        else:
-            labels = labels[window_size:].reset_index(drop=True)
-        return labels
 
     def add_feature_history_window(self, dataframe, window_size):
         samples_history = []
