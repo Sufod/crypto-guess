@@ -50,7 +50,6 @@ class CryptoDataConverter:
 
         ])
 
-
         features = CryptoUtils.compute_additionnal_features([
             lambda: crypto_features_extractor.add_feature_history_window_mlp(corpus, 2)
             # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)

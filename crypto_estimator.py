@@ -19,17 +19,17 @@ from __future__ import print_function
 import argparse
 import tensorflow as tf
 
-from controllers.CryptoBrain import CryptoBrain as crypto_brain
-from models.CryptoModel import CryptoModel as crypto_model
+from controllers.CryptoBrain import CryptoBrain
+from models.CryptoModel import CryptoModel
 from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
 
 
 def main(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', default=100, type=int, help='batch size')
-    parser.add_argument('--num_steps', default=100, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
+    parser.add_argument('--batch_size', default=1000, type=int, help='batch size')
+    parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
+    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     tasks_list = [
@@ -42,17 +42,20 @@ def main(argv):
         tasks[task.name] = task
 
     params = {
-        'optimizer': "SGD",
+        'optimizer': "Adagrad",
         'learning_rate': 0.01,
-        'batch_size': 100,
+        'batch_size': args.batch_size,
+        'num_steps': args.num_steps,
+        'train_steps': args.train_steps,
         'init_scale': 0.01,
         'hidden_units': [128, 64, 32],
         'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
         'dropout_rate': [0.0, 0.0, 0.0],
         'tasks': tasks
     }
-
-    crypto_brain.run(args.batch_size, args.num_steps, args.train_steps, crypto_model, params)
+    crypto_model=CryptoModel()
+    crypto_brain=CryptoBrain()
+    crypto_brain.run(crypto_model, params)
 
 
 if __name__ == '__main__':

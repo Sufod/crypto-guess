@@ -14,7 +14,7 @@ class CryptoBrain:
     crypto_data_loader = CryptoDataLoader()
     crypto_data_converter = CryptoDataConverter()
 
-    def run(self, batch_size, num_steps, train_steps, model, params):
+    def run(self, model, params):
         # Fetch the data
         corpus = self.crypto_data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-train.csv")
         features, labels = self.crypto_data_converter.generate_features_and_labels(corpus)
@@ -28,24 +28,26 @@ class CryptoBrain:
 
         classifier = tf.estimator.Estimator(model_fn=model.model_fn, params=params)
 
-        params['optimizer'] = "Adagrad"
-        params['learning_rate'] = "0.01"
-
         # Train the model.
+        params['learning_rate'] = 0.01
+        params['batch_size'] = 1000
+        params['train_steps'] = 5000
         classifier.train(
-            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, batch_size), steps=train_steps)
+            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, params['batch_size']),
+            steps=params['train_steps'])
         # for task in range(params['n_tasks']):
         #    if params['n_classes'][task] == 1:
         predictions = classifier.predict(
             input_fn=lambda: self.crypto_data_converter.eval_input_fn(features, labels=None, batch_size=1))
         self.show_prediction_graph(predictions, labels)
 
-        params['optimizer'] = "RMSprop"
-        params['learning_rate'] = "0.001"
-
         # Re-Train the model.
+        params['learning_rate'] = 0.01
+        params['batch_size'] = 1
+        params['train_steps'] = 50000
         classifier.train(
-            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, batch_size), steps=train_steps)
+            input_fn=lambda: self.crypto_data_converter.train_input_fn(features, labels, params['batch_size']),
+            steps=params['train_steps'])
         # for task in range(params['n_tasks']):
         #    if params['n_classes'][task] == 1:
         predictions = classifier.predict(
@@ -53,7 +55,6 @@ class CryptoBrain:
         self.show_prediction_graph(predictions, labels)
 
         # Evaluate the model.
-
         corpus = self.crypto_data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-test.csv")
         features, labels = self.crypto_data_converter.generate_features_and_labels(corpus)
         features = pd.concat([features, corpus], axis=1)
