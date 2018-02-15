@@ -53,7 +53,8 @@ class CryptoModel:
                 # Compute predicts.
                 predictions['regressions_' + task_name] = outputs[task_name]
 
-            elif isinstance(current_task, ClassificationTask):
+            else :
+            # elif isinstance(current_task, ClassificationTask):
 
                 # Compute classification predictions.
                 if current_task.output_units is not None:
@@ -91,7 +92,9 @@ class CryptoModel:
                 metrics['mse_' + task_name] = mse
                 tf.summary.scalar('mse_' + task_name, mse[1])
 
-            elif isinstance(current_task, ClassificationTask):
+            else:
+            # elif isinstance(current_task, ClassificationTask):
+
                 # Compute class loss.
                 if loss is not None:
                     loss = loss + current_task.weight * tf.losses.sparse_softmax_cross_entropy(labels=labels[task_name],

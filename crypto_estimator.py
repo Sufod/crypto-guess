@@ -34,27 +34,21 @@ def main(argv):
     features_preprocessor = CryptoFeaturesPreprocessor()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', default=1000, type=int, help='batch size')
+    parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=5000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
-    # self.features_preprocessor.preprocess_features(corpus)
+    # tasks_list = [
+    #     ClassificationTask("l_variation_sign", None, None, weight=0, nb_classes=2),
+    #     RegressionTask("l_price_at_0", None, None, weight=0),
+    #     RegressionTask("l_price_at_1", [16, 8], [None, None], weight=1),
+    #     RegressionTask("l_price_at_2", None, None, weight=0)
+    # ]
     #
-    # labels = CryptoUtils.compute_labels([
-    #     lambda: self.labels_extractor.compute_variation_sign(corpus),
-    #     lambda: self.labels_extractor.compute_next_price_at(corpus, 1),
-    #     lambda: self.labels_extractor.compute_next_price_at(corpus, 2),
-    #     lambda: self.labels_extractor.compute_next_price_at(corpus, 0)
-    #
-    # ])
-    #
-    # features = CryptoUtils.compute_additionnal_features([
-    #     lambda: self.features_extractor.add_feature_history_window_mlp(corpus, 2)
-    #     # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
-    # ])
-    #
-    # CryptoUtils.resize_dataframes(corpus, features, labels)
+    # tasks = {}
+    # for task in tasks_list:
+    #     tasks[task.name] = task
 
     params = {
         'optimizer': "Adagrad",
@@ -62,19 +56,43 @@ def main(argv):
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'init_scale': 0.01,
+        'init_scale': 0.1,
         'hidden_units': [128, 64, 32],
-        'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
-        'dropout_rate': [0.0, 0.0, 0.0],
+        'hidden_activations': [None, tf.nn.relu, None],
+        'dropout_rate': [0.0, 0.1, 0.0],
         'tasks': get_tasks_from_tasks_list([
             ClassificationTask(
                 name="l_variation_sign",
+                output_units=None,
+                output_activations=None,
                 weight=0,
-                generate_method=lambda args: labels_extractor.compute_variation_sign(args)),
+                nb_classes=2,
+                generate_method=lambda x: labels_extractor.compute_variation_sign(x)
+            ),
+
+            RegressionTask(
+                name="l_price_at_0",
+                output_units=None,
+                output_activations=None,
+                weight=0,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
+            ),
 
             RegressionTask(
                 name="l_price_at_1",
-                generate_method=lambda args: labels_extractor.compute_next_price_at(1, args))
+                output_units=[16],
+                output_activations=[None],
+                weight=1,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(1, x)
+            ),
+
+            RegressionTask(
+                name="l_price_at_2",
+                output_units=None,
+                output_activations=None,
+                weight=0,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
+            ),
         ])
     }
     crypto_model = CryptoModel()

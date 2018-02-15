@@ -32,13 +32,9 @@ class CryptoUtils:
 
     @staticmethod
     def resize_dataframes(corpus, features, labels):
-        # Cutting tail of all vectors until labels last valid index
-        last_index = float("inf")
-        for column_name, column in labels.items():
-            last_index = min(last_index, column.last_valid_index())
-        labels.drop(range(last_index, labels.shape[0]), inplace=True)
-        corpus.drop(range(last_index, corpus.shape[0]), inplace=True)
-        features.drop(range(last_index, features.shape[0]), inplace=True)
+        labels_size = labels.shape[0]
+        corpus.drop(range(labels_size, corpus.shape[0]), inplace=True)
+        features.drop(range(labels_size, features.shape[0]), inplace=True)
         # Cutting heads of all vectors until features first valid index
         top_index = -1
         for column_name, column in features.items():

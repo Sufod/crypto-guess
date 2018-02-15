@@ -32,9 +32,9 @@ class CryptoBrain:
         classifier = tf.estimator.Estimator(model_fn=model.model_fn, params=params)
 
         # Train the model.
-        params['learning_rate'] = 0.01
-        params['batch_size'] = 1000
-        params['train_steps'] = 5000
+        params['learning_rate'] = 0.1
+        params['batch_size'] = 100
+        params['train_steps'] = 10000
         classifier.train(
             input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
             steps=params['train_steps'])
@@ -45,9 +45,9 @@ class CryptoBrain:
         self.show_prediction_graph(predictions, labels)
 
         # Re-Train the model.
-        params['learning_rate'] = 0.01
+        params['learning_rate'] = 0.001
         params['batch_size'] = 1
-        params['train_steps'] = 50000
+        params['train_steps'] = 10000
         classifier.train(
             input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
             steps=params['train_steps'])
@@ -65,13 +65,13 @@ class CryptoBrain:
         eval_result = classifier.evaluate(
             input_fn=lambda: data_converter.eval_input_fn(features, labels, 1))
 
-        if params['task_params']['l_price_at_0']['weight'] != 0:
+        if params['tasks']['l_price_at_0'].weight != 0:
             print('\nTest set  0 mse: {mse_l_price_at_0:0.3f}\n'.format(**eval_result))
-        if params['task_params']['l_price_at_1']['weight'] != 0:
+        if params['tasks']['l_price_at_1'].weight != 0:
             print('\nTest set +1 mse: {mse_l_price_at_1:0.3f}\n'.format(**eval_result))
-        if params['task_params']['l_price_at_2']['weight'] != 0:
+        if params['tasks']['l_price_at_2'].weight != 0:
             print('\nTest set +2 mse: {mse_l_price_at_2:0.3f}\n'.format(**eval_result))
-        if params['task_params']['l_variation_sign']['weight'] != 0:
+        if params['tasks']['l_variation_sign'].weight != 0:
             print('\nTest set accuracy variation sign: {accuracy_l_variation_sign:0.3f}\n'.format(**eval_result))
 
         # Visualize predictions.

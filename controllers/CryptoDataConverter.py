@@ -47,21 +47,30 @@ class CryptoDataConverter:
         return dataset
 
     def perform(self, fun, *args):
-        test = fun(*args)
         return fun(*args)
 
     def generate_features_and_labels(self, params):
         self.features_preprocessor.preprocess_features(self.corpus)
 
-        labels = pd.DataFrame()
+        labels = []
         for task_name, task in params["tasks"].items():
-            labels = pd.concat([labels, self.perform(task.generate_method, (task_name, self.corpus))], axis=1)
+            labels.append(self.perform(task.generate_method, (task_name, self.corpus)))
+
+        # Cutting tail of all vectors until labels last valid index
+        last_index = float("inf")
+        for column in labels:
+            last_index = min(last_index, column.last_valid_index())
+
+        df_labels = pd.DataFrame()
+        for column in labels:
+            test=column.drop(range(last_index, column.shape[0]))
+            df_labels = pd.concat([df_labels, test], axis=1)
 
         features = CryptoUtils.compute_additionnal_features([
             lambda: self.features_extractor.add_feature_history_window_mlp(self.corpus, 2)
             # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
         ])
 
-        CryptoUtils.resize_dataframes(self.corpus, features, labels)
+        CryptoUtils.resize_dataframes(self.corpus, features, df_labels)
 
-        return features, labels
+        return features, df_labels
