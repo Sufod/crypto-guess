@@ -36,18 +36,18 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=10000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
         'optimizer': "Adam",
-        'learning_rate': 0.01,
+        'learning_rate': 0.001,
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
         'init_scale': 0.5,
-        'hidden_units': [128, 64, 32],
-        'hidden_activations': [None, None, None],
+        'hidden_units': [64, 32],
+        'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
         'tasks': get_tasks_from_tasks_list([
             ClassificationTask(
@@ -61,25 +61,25 @@ def main(argv):
 
             RegressionTask(
                 name="l_price_at_0",
-                output_units=[16],
+                output_units=None,
                 output_activations=[None],
-                weight=1,
+                weight=10,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
             ),
 
             RegressionTask(
                 name="l_price_at_1",
-                output_units=[16],
-                output_activations=[None],
+                output_units=[32, 16],
+                output_activations=[None, None],
                 weight=1,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(1, x)
             ),
 
             RegressionTask(
                 name="l_price_at_2",
-                output_units=None,
-                output_activations=None,
-                weight=0,
+                output_units=[32, 16],
+                output_activations=[None, None],
+                weight=1,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
             ),
         ])

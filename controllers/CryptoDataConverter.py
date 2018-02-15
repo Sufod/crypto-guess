@@ -67,7 +67,7 @@ class CryptoDataConverter:
             df_labels = pd.concat([df_labels, test], axis=1)
 
         features = CryptoUtils.compute_additionnal_features([
-            lambda: self.features_extractor.add_feature_history_window_mlp(self.corpus, 1)
+            lambda: self.features_extractor.add_feature_history_window_mlp(self.corpus, 2)
             # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
         ])
 
