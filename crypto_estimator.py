@@ -36,30 +36,19 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=5000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=10000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
-    # tasks_list = [
-    #     ClassificationTask("l_variation_sign", None, None, weight=0, nb_classes=2),
-    #     RegressionTask("l_price_at_0", None, None, weight=0),
-    #     RegressionTask("l_price_at_1", [16, 8], [None, None], weight=1),
-    #     RegressionTask("l_price_at_2", None, None, weight=0)
-    # ]
-    #
-    # tasks = {}
-    # for task in tasks_list:
-    #     tasks[task.name] = task
-
     params = {
-        'optimizer': "Adagrad",
+        'optimizer': "Adam",
         'learning_rate': 0.01,
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'init_scale': 0.1,
+        'init_scale': 0.5,
         'hidden_units': [128, 64, 32],
-        'hidden_activations': [None, tf.nn.relu, None],
-        'dropout_rate': [0.0, 0.1, 0.0],
+        'hidden_activations': [None, None, None],
+        'dropout_rate': [0.0, 0.0, 0.0],
         'tasks': get_tasks_from_tasks_list([
             ClassificationTask(
                 name="l_variation_sign",
@@ -72,9 +61,9 @@ def main(argv):
 
             RegressionTask(
                 name="l_price_at_0",
-                output_units=None,
-                output_activations=None,
-                weight=0,
+                output_units=[16],
+                output_activations=[None],
+                weight=1,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
             ),
 
