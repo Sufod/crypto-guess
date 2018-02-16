@@ -49,7 +49,7 @@ class CryptoLabelsExtractor:
             future_prices.append(sample.open)
         return Utils.transform_list_to_df(task_name, future_prices)
 
-    def get_corpus_and_task_name_from_args(args):
+    def get_corpus_and_task_name_from_args(self, args):
         task_name = args[0]
         corpus = args[1]
         return corpus, task_name

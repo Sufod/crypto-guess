@@ -38,7 +38,7 @@ class DataLoader:
         return self.load_dataframes(filename, params)
 
     def load_dataframes(self, filename, params):
-        corpus = self.data_loader.load_csv_data(filename)
+        corpus = self.load_csv_data(filename)
         test_data_converter = DataConverter(corpus)
         test_features, test_labels = test_data_converter.generate_features_and_labels(params)
         return test_features, test_labels
