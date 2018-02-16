@@ -36,7 +36,7 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=5000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=100000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
@@ -47,6 +47,7 @@ def main(argv):
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
+        'supervision_steps': 10,
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
@@ -64,7 +65,7 @@ def main(argv):
                 name="l_price_at_0",
                 output_units=None,
                 output_activations=[None],
-                weight=10,
+                weight=20,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
             ),
 
@@ -72,13 +73,13 @@ def main(argv):
                 name="l_price_at_1",
                 output_units=[32, 16],
                 output_activations=[None, None],
-                weight=1,
+                weight=2,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(1, x)
             ),
 
             RegressionTask(
                 name="l_price_at_2",
-                output_units=None,
+                output_units=[32, 16],
                 output_activations=[None, None],
                 weight=0,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
