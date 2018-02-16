@@ -23,8 +23,6 @@ class CryptoBrain:
 
         features, labels = data_converter.generate_features_and_labels(params)
 
-        features = pd.concat([features, corpus], axis=1)
-
         # Feature columns describe how to use the input.
         model_feature_columns = []
         for feature in features.keys():

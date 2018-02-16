@@ -31,18 +31,24 @@ class CryptoUtils:
         return new_df
 
     @staticmethod
-    def resize_dataframes(corpus, features, labels):
+    def resize_dataframes(features, labels):
+        #Cutting tails of features to match labels_size
         labels_size = labels.shape[0]
-        corpus.drop(range(labels_size, corpus.shape[0]), inplace=True)
         features.drop(range(labels_size, features.shape[0]), inplace=True)
-        # Cutting heads of all vectors until features first valid index
-        top_index = -1
+        
+        # Cutting heads of all vectors to match features first valid index
+        first_valid_index = -1
         for column_name, column in features.items():
-            top_index = max(top_index, column.first_valid_index())
-        if top_index > 0:
-            corpus.drop(range(0, top_index), inplace=True)
-            features.drop(range(0, top_index), inplace=True)
-            labels.drop(range(0, top_index), inplace=True)
+            first_valid_index = max(first_valid_index, column.first_valid_index())
+        features.drop(range(0, first_valid_index), inplace=True)
+        labels.drop(range(0, first_valid_index), inplace=True)
+            
+        # Cutting tails of all vectors to match features last valid index
+        last_valid_index = float("inf")
+        for column_name, column in features.items():
+            last_valid_index = min(last_valid_index, column.last_valid_index())
+        features.drop((range(last_valid_index, column.shape[0])), inplace=True)
+        labels.drop(range(last_valid_index, column.shape[0]), inplace=True)
 
     @staticmethod
     def get_corpus_and_task_name_from_args(args):

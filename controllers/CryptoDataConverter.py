@@ -5,6 +5,7 @@ from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
 from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
 
 from controllers.CryptoUtils import CryptoUtils
+from features.CorpusFeature import CorpusFeature
 
 
 class CryptoDataConverter:
@@ -51,26 +52,51 @@ class CryptoDataConverter:
 
     def generate_features_and_labels(self, params):
         self.features_preprocessor.preprocess_features(self.corpus)
+        features_params = self.extract_features_params(params)
+        labels = self.extract_labels(params)
+        features = self.extract_features(features_params)
+        CryptoUtils.resize_dataframes(features, labels)
 
+        return features, labels
+
+    def extract_features(self, features_params):
+        features = self.get_corpus_features(features_params[0])
+        for feature_name in features_params[1]:
+            feature = features_params[2][feature_name]
+            features = pd.concat([
+                features,
+                self.perform(feature.generate_method, (feature_name, features))
+            ], axis=1)
+        return features
+
+    def get_corpus_features(self, corpus_features_names):
+        for corpus_column in self.corpus.keys():
+            if corpus_column not in corpus_features_names:
+                del (self.corpus[corpus_column])
+        return self.corpus
+
+    def extract_labels(self, params):
+        df_labels = pd.DataFrame()
         labels = []
         for task_name, task in params["tasks"].items():
             labels.append(self.perform(task.generate_method, (task_name, self.corpus)))
-
         # Cutting tail of all vectors until labels last valid index
         last_index = float("inf")
         for column in labels:
             last_index = min(last_index, column.last_valid_index())
-
-        df_labels = pd.DataFrame()
         for column in labels:
-            test=column.drop(range(last_index, column.shape[0]))
+            test = column.drop(range(last_index, column.shape[0]))
             df_labels = pd.concat([df_labels, test], axis=1)
+        return df_labels
 
-        features = CryptoUtils.compute_additionnal_features([
-            lambda: self.features_extractor.add_feature_history_window_mlp(self.corpus, 2)
-            # lambda: self.crypto_features_extractor.build_sequence_features(corpus, 1)
-        ])
-
-        CryptoUtils.resize_dataframes(self.corpus, features, df_labels)
-
-        return features, df_labels
+    def extract_features_params(self, params):
+        corpus_features_names = []
+        features_names = []
+        features_params = {}
+        for feature in params["features"]:
+            features_params[feature.name] = feature
+            if isinstance(feature, CorpusFeature):
+                corpus_features_names.append(feature.name)
+            else:
+                features_names.append(feature.name)
+        return corpus_features_names, features_names, features_params

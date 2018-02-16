@@ -1,12 +1,7 @@
 class CryptoFeaturesPreprocessor:
 
     def preprocess_features(self, features):
-        self.remove_unwanted_features(features)
         self.normalize_features(features)
-
-    def remove_unwanted_features(self, features):
-        # Remove time
-        del (features['time'])
 
     def normalize_features(self, features):
         for feature_name in features.keys():

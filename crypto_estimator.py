@@ -23,6 +23,8 @@ from controllers.CryptoBrain import CryptoBrain
 from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
 from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
 from extractors.CryptoLabelsExtractor import CryptoLabelsExtractor
+from features.CorpusFeature import CorpusFeature
+from features.Feature import Feature
 from models.CryptoModel import CryptoModel
 from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
@@ -39,6 +41,7 @@ def main(argv):
     parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
+
     params = {
         'optimizer': "Adam",
         'learning_rate': 0.001,
@@ -49,7 +52,7 @@ def main(argv):
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
-        'tasks': get_tasks_from_tasks_list([
+        'tasks': get_dict_from_obj_list([
             ClassificationTask(
                 name="l_variation_sign",
                 output_units=None,
@@ -82,18 +85,36 @@ def main(argv):
                 weight=1,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
             ),
-        ])
+        ]),
+        "features": [
+            CorpusFeature(name='high'),
+            CorpusFeature(name='low'),
+            CorpusFeature(name='open'),
+            CorpusFeature(name='volumefrom'),
+            CorpusFeature(name='volumeto'),
+            CorpusFeature(name='close'),
+            Feature(
+                name='high_at_1',
+                generate_method=lambda x: features_extractor.compute_feature_at('high',1,x)),
+            Feature(
+                name='high_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('high', -1, x)),
+            Feature(
+                name='high_at_-1_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('high_at_-1', -1, x))
+
+        ]
     }
     crypto_model = CryptoModel()
     crypto_brain = CryptoBrain()
     crypto_brain.run(crypto_model, params)
 
 
-def get_tasks_from_tasks_list(tasks_list):
-    tasks = {}
-    for task in tasks_list:
-        tasks[task.name] = task
-    return tasks
+def get_dict_from_obj_list(obj_list):
+    dict = {}
+    for task in obj_list:
+        dict[task.name] = task
+    return dict
 
 
 if __name__ == '__main__':
