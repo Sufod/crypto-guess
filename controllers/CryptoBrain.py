@@ -23,6 +23,12 @@ class CryptoBrain:
 
         features, labels = data_converter.generate_features_and_labels(params)
 
+        Z = 0
+        for task_name in params['tasks'].keys():
+            Z += params['tasks'][task_name].weight
+        for task_name in params['tasks'].keys():
+            params['tasks'][task_name].weight /= Z
+
         # Feature columns describe how to use the input.
         model_feature_columns = []
         for feature in features.keys():
@@ -32,12 +38,13 @@ class CryptoBrain:
         classifier = tf.estimator.Estimator(model_fn=model.model_fn, params=params)
 
         # Train the model.
-        classifier.train(
-            input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
-            steps=params['train_steps'])
-        predictions = classifier.predict(
-            input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
-        self.show_prediction_graph(predictions, labels, params)
+        for i in range(10):
+            classifier.train(
+                input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
+                steps=params['train_steps'])
+            predictions = classifier.predict(
+                input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
+            self.show_prediction_graph(predictions, labels, params)
 
         # # Re-Train the model.
         # params['learning_rate'] = 0.001
@@ -66,7 +73,8 @@ class CryptoBrain:
                 if task_name == 'l_price_at_2':
                     print('\nTest set +2 mse: {mse_l_price_at_2:0.6f}\n'.format(**eval_result))
                 if task_name == 'l_variation_sign':
-                    print('\nTest set accuracy variation sign: {accuracy_l_variation_sign:0.3f}\n'.format(**eval_result))
+                    print(
+                        '\nTest set accuracy variation sign: {accuracy_l_variation_sign:0.3f}\n'.format(**eval_result))
 
         # Visualize predictions.
         predictions = classifier.predict(
@@ -95,13 +103,13 @@ class CryptoBrain:
         for pred_dict, expect, real in zip(predictions, labels['l_price_at_1'], labels['l_price_at_0']):
             for task_name in params['tasks'].keys():
                 if isinstance(params['tasks'][task_name], RegressionTask) and params['tasks'][task_name].weight != 0:
-                    lst_predict[task_name].append(pred_dict['regressions_'+task_name])
+                    lst_predict[task_name].append(pred_dict['regressions_' + task_name])
             lst_expect.append(expect)
             lst_real.append(real)
 
         for task_name in params['tasks'].keys():
             if isinstance(params['tasks'][task_name], RegressionTask) and params['tasks'][task_name].weight != 0:
-                plt.plot(lst_predict[task_name], label="predict_"+task_name)
+                plt.plot(lst_predict[task_name], label="predict_" + task_name)
 
         plt.plot(lst_expect, label="real+1")
         plt.plot(lst_real, label="real")
