@@ -4,12 +4,20 @@ from controllers.CryptoUtils import CryptoUtils
 
 class CryptoFeaturesExtractor:
 
-    def add_feature_history_window_mlp(self, corpus, window_size):
-        new_features = pd.DataFrame()
-        for column_name, column in corpus.items():
-            for j in range(1,window_size+1):
-                new_features[column_name+"_at_-_"+str(j)] = column.shift(j)
-        return new_features
+    # def add_feature_history_window_mlp(self, window_size, args):
+    #     corpus=args[0]
+    #     new_features = pd.DataFrame()
+    #     for column_name, column in corpus.items():
+    #         for j in range(1,window_size+1):
+    #             new_features[column_name+"_at_-_"+str(j)] = column.shift(j)
+    #     return new_features
+
+    def compute_feature_at(self,target_feature_name, nb,args):
+        feature_name = args[0]
+        features = args[1]
+        new_column=pd.DataFrame()
+        new_column[feature_name]=features[target_feature_name].shift(-nb)
+        return new_column
 
     # def build_sequence_features(self, features, window_size):
     #     sequence_features = pd.DataFrame()
@@ -19,19 +27,19 @@ class CryptoFeaturesExtractor:
     #             sequence_features[column_name].append(column.shift(j))
     #     return sequence_features
 
-    def add_feature_history_window(self, dataframe, window_size):
-        samples_history = []
-        samples_history_list = []
-        for i, sample in enumerate(dataframe.itertuples()):
-            if i < window_size:
-                samples_history.append(sample)
-                continue
-            samples_history_list.append(list(samples_history))
-            samples_history.pop(0)
-            samples_history.append(sample)
-        dataframe.drop(dataframe.tail(window_size).index, inplace=True)
-        dataframe.reset_index(drop=True,inplace=True)
-        return self.add_feature_to_dataframe(dataframe, 'SampleHistory', samples_history_list)
+    # def add_feature_history_window(self, dataframe, window_size):
+    #     samples_history = []
+    #     samples_history_list = []
+    #     for i, sample in enumerate(dataframe.itertuples()):
+    #         if i < window_size:
+    #             samples_history.append(sample)
+    #             continue
+    #         samples_history_list.append(list(samples_history))
+    #         samples_history.pop(0)
+    #         samples_history.append(sample)
+    #     dataframe.drop(dataframe.tail(window_size).index, inplace=True)
+    #     dataframe.reset_index(drop=True,inplace=True)
+    #     return self.add_feature_to_dataframe(dataframe, 'SampleHistory', samples_history_list)
 
     def add_feature_to_dataframe(self, dataframe, feature_name, feature_list):
         return pd.concat([dataframe, pd.DataFrame(data={feature_name: pd.Series(data=feature_list)})], axis=1)

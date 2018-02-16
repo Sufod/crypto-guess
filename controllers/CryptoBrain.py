@@ -20,19 +20,16 @@ class CryptoBrain:
         train_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-train.csv")
         train_data_converter = CryptoDataConverter(train_corpus)
         train_features, train_labels = train_data_converter.generate_features_and_labels(params)
-        train_features = pd.concat([train_features, train_corpus], axis=1)
 
         # Fetch the validation data
         dev_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-dev.csv")
         dev_data_converter = CryptoDataConverter(dev_corpus)
         dev_features, dev_labels = dev_data_converter.generate_features_and_labels(params)
-        dev_features = pd.concat([dev_features, dev_corpus], axis=1)
 
         # Fetch the test data
         test_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-test.csv")
         test_data_converter = CryptoDataConverter(test_corpus)
         test_features, test_labels = test_data_converter.generate_features_and_labels(params)
-        test_features = pd.concat([test_features, test_corpus], axis=1)
 
         Z = 0
         for task_name in params['tasks'].keys():
@@ -89,6 +86,7 @@ class CryptoBrain:
             predictions = classifier.predict(
                 input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
             self.show_prediction_graph(predictions, labels, params)
+
 
     def show_prediction_graph(self, predictions, labels, params):
 
