@@ -127,5 +127,19 @@ class CryptoModel:
 
         print(optimizer)
 
-        train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+        # tvars = tf.trainable_variables()
+        # grads, _ = tf.clip_by_global_norm(tf.gradients(self._cost, tvars), params['max_grad_norm'])
+        # optimizer = tf.train.GradientDescentOptimizer(self._lr)
+        # self._train_op = optimizer.apply_gradients(
+        #     zip(grads, tvars),
+        #     global_step=tf.train.get_or_create_global_step())
+
+        tvars = tf.trainable_variables()
+        grads, _ = tf.clip_by_global_norm(tf.gradients(loss, tvars), params['max_grad_norm'])
+        train_op = optimizer.apply_gradients( zip(grads, tvars), global_step=tf.train.get_or_create_global_step())
+
+        # grads_and_vars = optimizer.compute_gradients(loss)
+        # train_op = optimizer.apply_gradients(grads_and_vars, global_step=tf.train.get_global_step())
+
+        # train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
         return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)

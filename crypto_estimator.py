@@ -36,16 +36,17 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=5000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
         'optimizer': "Adam",
-        'learning_rate': 0.001,
+        'learning_rate': 0.0005,
+        'max_grad_norm': 0.1,
+        'init_scale': 0.5,
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'init_scale': 0.5,
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
@@ -77,9 +78,9 @@ def main(argv):
 
             RegressionTask(
                 name="l_price_at_2",
-                output_units=[32, 16],
+                output_units=None,
                 output_activations=[None, None],
-                weight=1,
+                weight=0,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
             ),
         ])

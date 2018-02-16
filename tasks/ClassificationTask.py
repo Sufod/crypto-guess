@@ -23,6 +23,10 @@ class ClassificationTask:
     def weight(self):
         return self._weight
 
+    @weight.setter
+    def weight(self, value):
+        self._weight = value
+
     @property
     def nb_classes(self):
         return self._nb_classes

@@ -22,8 +22,13 @@ class CryptoBrain:
         data_converter = CryptoDataConverter(corpus)
 
         features, labels = data_converter.generate_features_and_labels(params)
-
         features = pd.concat([features, corpus], axis=1)
+
+        Z = 0
+        for task_name in params['tasks'].keys():
+            Z += params['tasks'][task_name].weight
+        for task_name in params['tasks'].keys():
+            params['tasks'][task_name].weight /= Z
 
         # Feature columns describe how to use the input.
         model_feature_columns = []
@@ -34,12 +39,13 @@ class CryptoBrain:
         classifier = tf.estimator.Estimator(model_fn=model.model_fn, params=params)
 
         # Train the model.
-        classifier.train(
-            input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
-            steps=params['train_steps'])
-        predictions = classifier.predict(
-            input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
-        self.show_prediction_graph(predictions, labels, params)
+        for i in range(10):
+            classifier.train(
+                input_fn=lambda: data_converter.train_input_fn(features, labels, params['batch_size']),
+                steps=params['train_steps'])
+            predictions = classifier.predict(
+                input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
+            self.show_prediction_graph(predictions, labels, params)
 
         # # Re-Train the model.
         # params['learning_rate'] = 0.001
