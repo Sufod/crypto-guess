@@ -1,15 +1,15 @@
 import pandas as pd
 
 
-class CryptoUtils:
+class Utils:
 
     @staticmethod
     def compute_labels(method_list):
-        return CryptoUtils.compute_methods(method_list, cut_mode=True)
+        return Utils.compute_methods(method_list, cut_mode=True)
 
     @staticmethod
     def compute_additionnal_features(method_list):
-        return CryptoUtils.compute_methods(method_list, cut_mode=False)
+        return Utils.compute_methods(method_list, cut_mode=False)
 
     @staticmethod
     def transform_list_to_df(name, list):
@@ -32,17 +32,17 @@ class CryptoUtils:
 
     @staticmethod
     def resize_dataframes(features, labels):
-        #Cutting tails of features to match labels_size
+        # Cutting tails of features to match labels_size
         labels_size = labels.shape[0]
         features.drop(range(labels_size, features.shape[0]), inplace=True)
-        
+
         # Cutting heads of all vectors to match features first valid index
         first_valid_index = -1
         for column_name, column in features.items():
             first_valid_index = max(first_valid_index, column.first_valid_index())
         features.drop(range(0, first_valid_index), inplace=True)
         labels.drop(range(0, first_valid_index), inplace=True)
-            
+
         # Cutting tails of all vectors to match features last valid index
         last_valid_index = float("inf")
         for column_name, column in features.items():
@@ -51,7 +51,8 @@ class CryptoUtils:
         labels.drop(range(last_valid_index, column.shape[0]), inplace=True)
 
     @staticmethod
-    def get_corpus_and_task_name_from_args(args):
-        task_name = args[0]
-        corpus = args[1]
-        return corpus, task_name
+    def get_dict_from_obj_list(obj_list):
+        dict = {}
+        for task in obj_list:
+            dict[task.name] = task
+        return dict

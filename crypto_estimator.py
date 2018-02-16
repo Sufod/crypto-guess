@@ -20,20 +20,20 @@ import argparse
 import tensorflow as tf
 
 from controllers.CryptoBrain import CryptoBrain
-from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
-from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
-from extractors.CryptoLabelsExtractor import CryptoLabelsExtractor
+from processors.FeaturesProcessor import FeaturesProcessor
+from processors.FeaturesExtractor import FeaturesExtractor
+from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
 from features.CorpusFeature import CorpusFeature
 from features.Feature import Feature
-from models.CryptoModel import CryptoModel
+from models.MultiLayerPerceptron import MultiLayerPerceptron
 from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
 
 
 def main(argv):
     labels_extractor = CryptoLabelsExtractor()
-    features_extractor = CryptoFeaturesExtractor()
-    features_preprocessor = CryptoFeaturesPreprocessor()
+    features_extractor = FeaturesExtractor()
+    features_preprocessor = FeaturesProcessor()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
@@ -41,8 +41,12 @@ def main(argv):
     parser.add_argument('--train_steps', default=100000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
-
     params = {
+        'corpora': {
+            'train_corpus':'corpusmonnaies/BTC-train.csv',
+            'dev_corpus':'corpusmonnaies/BTC-dev.csv',
+            'test_corpus':'corpusmonnaies/BTC-test.csv',
+        },
         'optimizer': "Adam",
         'learning_rate': 0.0005,
         'max_grad_norm': 0.1,
@@ -54,7 +58,7 @@ def main(argv):
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
-        'tasks': get_dict_from_obj_list([
+        'tasks': [
             ClassificationTask(
                 name="l_variation_sign",
                 output_units=None,
@@ -87,7 +91,7 @@ def main(argv):
                 weight=0,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
             ),
-        ]),
+        ],
         "features": [
             CorpusFeature(name='high'),
             CorpusFeature(name='low'),
@@ -107,17 +111,9 @@ def main(argv):
 
         ]
     }
-    crypto_model = CryptoModel()
+    crypto_model = MultiLayerPerceptron()
     crypto_brain = CryptoBrain()
     crypto_brain.run(crypto_model, params)
-
-
-def get_dict_from_obj_list(obj_list):
-    dict = {}
-    for task in obj_list:
-        dict[task.name] = task
-    return dict
-
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)

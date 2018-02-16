@@ -1,8 +1,7 @@
 import pandas as pd
 
-from controllers.CryptoUtils import CryptoUtils
 
-class CryptoFeaturesExtractor:
+class FeaturesExtractor:
 
     # def add_feature_history_window_mlp(self, window_size, args):
     #     corpus=args[0]
@@ -12,11 +11,11 @@ class CryptoFeaturesExtractor:
     #             new_features[column_name+"_at_-_"+str(j)] = column.shift(j)
     #     return new_features
 
-    def compute_feature_at(self,target_feature_name, nb,args):
+    def compute_feature_at(self, target_feature_name, nb, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
-        new_column[feature_name]=features[target_feature_name].shift(-nb)
+        new_column = pd.DataFrame()
+        new_column[feature_name] = features[target_feature_name].shift(-nb)
         return new_column
 
     # def build_sequence_features(self, features, window_size):

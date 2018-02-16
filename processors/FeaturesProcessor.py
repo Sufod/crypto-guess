@@ -1,4 +1,4 @@
-class CryptoFeaturesPreprocessor:
+class FeaturesProcessor:
 
     def preprocess_features(self, features):
         self.normalize_features(features)

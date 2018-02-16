@@ -1,35 +1,24 @@
-import pandas as pd
-
-from controllers.CryptoDataConverter import CryptoDataConverter
-from controllers.CryptoDataLoader import CryptoDataLoader
+from loaders.DataLoader import DataLoader
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from tensorflow.contrib.learn.python.learn.estimators import dynamic_rnn_estimator
-
+from processors.DataConverter import DataConverter
 from tasks.RegressionTask import RegressionTask
 
 
 class CryptoBrain:
-    data_loader = CryptoDataLoader()
 
     def run(self, model, params):
-
+        data_loader = DataLoader()
         # Fetch the training data
-        train_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-train.csv")
-        train_data_converter = CryptoDataConverter(train_corpus)
-        train_features, train_labels = train_data_converter.generate_features_and_labels(params)
+        train_features, train_labels = data_loader.load_train_dataframes(params)
 
         # Fetch the validation data
-        dev_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-dev.csv")
-        dev_data_converter = CryptoDataConverter(dev_corpus)
-        dev_features, dev_labels = dev_data_converter.generate_features_and_labels(params)
+        dev_features, dev_labels = data_loader.load_dev_dataframes(params)
 
         # Fetch the test data
-        test_corpus = self.data_loader.load_crypto_crawler_data("corpusmonnaies/BTC-test.csv")
-        test_data_converter = CryptoDataConverter(test_corpus)
-        test_features, test_labels = test_data_converter.generate_features_and_labels(params)
+        test_features, test_labels = data_loader.load_test_dataframes(params)
 
         Z = 0
         for task_name in params['tasks'].keys():
@@ -53,23 +42,23 @@ class CryptoBrain:
             #
             # Train the model on train set.
             classifier.train(
-                input_fn=lambda: train_data_converter.train_input_fn(train_features, train_labels, params['batch_size']),
+                input_fn=lambda: DataConverter.train_input_fn(train_features, train_labels, params['batch_size']),
                 steps=params['train_steps'] / params['supervision_steps'])
             #
             # Evaluate the model on train set.
-            self.evaluate(classifier, params, train_features, train_labels, train_data_converter, False, 'Train')
+            self.evaluate(classifier, params, train_features, train_labels, False, 'Train')
             #
             # Evaluate the model on dev set.
-            self.evaluate(classifier, params, dev_features, dev_labels, dev_data_converter, visualize, 'Dev')
+            self.evaluate(classifier, params, dev_features, dev_labels, visualize, 'Dev')
 
         #
         #
         # Evaluate the model on test set.
-        self.evaluate(classifier, params, test_features, test_labels, test_data_converter, True, 'Test')
+        self.evaluate(classifier, params, test_features, test_labels, True, 'Test')
 
-    def evaluate(self, classifier, params, features, labels, data_converter, visualize=False, mode='Train'):
+    def evaluate(self, classifier, params, features, labels, visualize=False, mode='Train'):
         eval_result = classifier.evaluate(
-            input_fn=lambda: data_converter.eval_input_fn(features, labels, 1))
+            input_fn=lambda: DataConverter.eval_input_fn(features, labels, 1))
         for task_name in params['tasks'].keys():
             if params['tasks'][task_name].weight != 0:
                 if task_name == 'l_price_at_0':
@@ -84,9 +73,8 @@ class CryptoBrain:
 
         if visualize:
             predictions = classifier.predict(
-                input_fn=lambda: data_converter.eval_input_fn(features, labels=None, batch_size=1))
+                input_fn=lambda: DataConverter.eval_input_fn(features, labels=None, batch_size=1))
             self.show_prediction_graph(predictions, labels, params)
-
 
     def show_prediction_graph(self, predictions, labels, params):
 

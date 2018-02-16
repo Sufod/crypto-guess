@@ -6,7 +6,7 @@ from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
 
 
-class CryptoModel:
+class MultiLayerPerceptron:
     def model_fn(self, features, labels, mode, params):
 
         if mode == tf.estimator.ModeKeys.TRAIN:
@@ -85,9 +85,10 @@ class CryptoModel:
                     losses[task_name] = tf.losses.mean_squared_error(labels=labels[task_name],
                                                                      predictions=outputs[task_name])
                     # Compute evaluation metrics.
-                    metrics['mse_' + task_name] = tf.metrics.mean_squared_error(labels=tf.cast(labels[task_name], tf.float32),
-                                                                                predictions=outputs[task_name],
-                                                                                name='mse_op_' + task_name)
+                    metrics['mse_' + task_name] = tf.metrics.mean_squared_error(
+                        labels=tf.cast(labels[task_name], tf.float32),
+                        predictions=outputs[task_name],
+                        name='mse_op_' + task_name)
                     tf.summary.scalar('mse_' + task_name, metrics['mse_' + task_name][1])
 
                 elif isinstance(current_task, ClassificationTask):
@@ -105,7 +106,7 @@ class CryptoModel:
         for task_name in params['tasks'].keys():
             current_task = params['tasks'][task_name]
             if current_task.weight != 0:
-                if loss is None :
+                if loss is None:
                     loss = current_task.weight * losses[task_name]
                 else:
                     loss += current_task.weight * losses[task_name]
@@ -136,7 +137,7 @@ class CryptoModel:
 
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(tf.gradients(loss, tvars), params['max_grad_norm'])
-        train_op = optimizer.apply_gradients( zip(grads, tvars), global_step=tf.train.get_or_create_global_step())
+        train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=tf.train.get_or_create_global_step())
 
         # grads_and_vars = optimizer.compute_gradients(loss)
         # train_op = optimizer.apply_gradients(grads_and_vars, global_step=tf.train.get_global_step())

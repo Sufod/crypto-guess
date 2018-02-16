@@ -1,20 +1,18 @@
 import tensorflow as tf
 import pandas as pd
 
-from controllers.CryptoFeaturesPreprocessor import CryptoFeaturesPreprocessor
-from extractors.CryptoFeaturesExtractor import CryptoFeaturesExtractor
+from processors.FeaturesProcessor import FeaturesProcessor
+from processors.FeaturesExtractor import FeaturesExtractor
 
-from controllers.CryptoUtils import CryptoUtils
+from misc.Utils import Utils
 from features.CorpusFeature import CorpusFeature
 
 
-class CryptoDataConverter:
-    features_preprocessor = CryptoFeaturesPreprocessor()
-    features_extractor = CryptoFeaturesExtractor()
+class DataConverter:
+    features_preprocessor = FeaturesProcessor()
+    features_extractor = FeaturesExtractor()
 
-    def __init__(self, corpus):
-        self.corpus = corpus
-
+    @staticmethod
     def train_input_fn(self, features, labels, batch_size):
         """An input function for training"""
 
@@ -28,6 +26,7 @@ class CryptoDataConverter:
         # Return the dataset.
         return dataset
 
+    @staticmethod
     def eval_input_fn(self, features, labels, batch_size):
         """An input function for evaluation or prediction"""
         features = dict(features)
@@ -47,6 +46,9 @@ class CryptoDataConverter:
         # Return the dataset.
         return dataset
 
+    def __init__(self, corpus):
+        self.corpus = corpus
+
     def perform(self, fun, *args):
         return fun(*args)
 
@@ -55,8 +57,7 @@ class CryptoDataConverter:
         features_params = self.extract_features_params(params)
         labels = self.extract_labels(params)
         features = self.extract_features(features_params)
-        CryptoUtils.resize_dataframes(features, labels)
-
+        Utils.resize_dataframes(features, labels)
         return features, labels
 
     def extract_features(self, features_params):
@@ -76,6 +77,7 @@ class CryptoDataConverter:
         return self.corpus
 
     def extract_labels(self, params):
+        params["tasks"] = Utils.get_dict_from_obj_list(params["tasks"])
         df_labels = pd.DataFrame()
         labels = []
         for task_name, task in params["tasks"].items():
