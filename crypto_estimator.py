@@ -20,7 +20,6 @@ import argparse
 import tensorflow as tf
 
 from controllers.CryptoBrain import CryptoBrain
-from misc.CorpusUtils import CorpusUtils
 from processors.FeaturesProcessor import FeaturesProcessor
 from processors.FeaturesExtractor import FeaturesExtractor
 from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
@@ -44,9 +43,11 @@ def main(argv):
 
     params = {
         'corpora': {
-            'train_corpus':'corpusmonnaies/BTCZ-train.csv',
-            'dev_corpus':'corpusmonnaies/BTCZ-dev.csv',
-            'test_corpus':'corpusmonnaies/BTCZ-test.csv',
+            'autogen': 'corpusmonnaies/BTCZ-latest.csv',
+            # Below values are ignored if autogen is set
+            'train':'corpusmonnaies/BTCZ-train.csv',
+            'dev':'corpusmonnaies/BTCZ-dev.csv',
+            'test':'corpusmonnaies/BTCZ-test.csv',
         },
         'optimizer': "Adam",
         'learning_rate': 0.0005,
@@ -191,8 +192,6 @@ def main(argv):
                 generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumefrom', 'div', 'volumeto',x))
         ]
     }
-
-    # CorpusUtils.produce_train_dev_test_from_full_corpus("corpusmonnaies/ZEC-latest.csv")
 
     crypto_model = MultiLayerPerceptron()
     crypto_brain = CryptoBrain()

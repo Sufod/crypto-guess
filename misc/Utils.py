@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 
@@ -68,3 +69,14 @@ class Utils:
         for task in obj_list:
             dict[task.name] = task
         return dict
+
+    @staticmethod
+    def get_base_and_dir_names(filepath):
+        basename = os.path.basename(filepath)
+        dir_name = os.path.dirname(filepath)
+        return basename, dir_name
+
+    @staticmethod
+    def get_sub_corpus_path(basename, dir_name, sub_corpus):
+        sub_corpus_name = basename.replace("latest", sub_corpus)
+        return dir_name + "/" + sub_corpus_name
