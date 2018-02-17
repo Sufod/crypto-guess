@@ -100,15 +100,29 @@ def main(argv):
             CorpusFeature(name='volumeto'),
             CorpusFeature(name='close'),
             Feature(
-                name='high_at_1',
-                generate_method=lambda x: features_extractor.compute_feature_at('high',1,x)),
-            Feature(
                 name='high_at_-1',
                 generate_method=lambda x: features_extractor.compute_feature_at('high', -1, x)),
             Feature(
-                name='high_at_-1_at_-1',
-                generate_method=lambda x: features_extractor.compute_feature_at('high_at_-1', -1, x))
-
+                name='low_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('low', -1, x)),
+            Feature(
+                name='open_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('open', -1, x)),
+            Feature(
+                name='volumefrom_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumefrom', -1, x)),
+            Feature(
+                name='volumeto_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumeto', -1, x)),
+            Feature(
+                name='close_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('close', -1, x)),
+            Feature(
+                name='open_var_at_-1',
+                generate_method=lambda x: features_extractor.compute_variation_feature('open', -1, x)),
+            Feature(
+                name='volume_diff',
+                generate_method=lambda x: features_extractor.compute_diff_feature('volumeto', 'volumefrom', x))
         ]
     }
     crypto_model = MultiLayerPerceptron()

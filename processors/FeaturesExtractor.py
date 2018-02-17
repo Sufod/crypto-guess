@@ -14,8 +14,24 @@ class FeaturesExtractor:
     def compute_feature_at(self, target_feature_name, nb, args):
         feature_name = args[0]
         features = args[1]
-        new_column = pd.DataFrame()
+        new_column=pd.DataFrame()
         new_column[feature_name] = features[target_feature_name].shift(-nb)
+        return new_column
+
+    def compute_diff_feature(self, target1_feature_name, target2_feature_name, args):
+        feature_name = args[0]
+        features = args[1]
+        new_column=pd.DataFrame()
+        new_column[feature_name] = features[target1_feature_name] - features[target2_feature_name]
+        return new_column
+
+    def compute_variation_feature(self, target_feature_name, nb, args):
+        feature_name = args[0]
+        features = args[1]
+        new_column=pd.DataFrame()
+        current = features[target_feature_name]
+        previous = features[target_feature_name].shift(-nb)
+        new_column[feature_name] = current - previous
         return new_column
 
     # def build_sequence_features(self, features, window_size):

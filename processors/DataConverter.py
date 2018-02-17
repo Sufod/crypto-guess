@@ -13,7 +13,7 @@ class DataConverter:
     features_extractor = FeaturesExtractor()
 
     @staticmethod
-    def train_input_fn(self, features, labels, batch_size):
+    def train_input_fn(features, labels, batch_size):
         """An input function for training"""
 
         # Convert the inputs to a Dataset.
@@ -27,7 +27,7 @@ class DataConverter:
         return dataset
 
     @staticmethod
-    def eval_input_fn(self, features, labels, batch_size):
+    def eval_input_fn(features, labels, batch_size):
         """An input function for evaluation or prediction"""
         features = dict(features)
         if labels is None:
@@ -53,11 +53,14 @@ class DataConverter:
         return fun(*args)
 
     def generate_features_and_labels(self, params):
-        self.features_preprocessor.preprocess_features(self.corpus)
+        # self.features_preprocessor.preprocess_features(self.corpus)
         features_params = self.extract_features_params(params)
         labels = self.extract_labels(params)
         features = self.extract_features(features_params)
         Utils.resize_dataframes(features, labels)
+        self.features_preprocessor.preprocess_features(features)
+        self.features_preprocessor.preprocess_features(labels)
+
         return features, labels
 
     def extract_features(self, features_params):
@@ -77,7 +80,8 @@ class DataConverter:
         return self.corpus
 
     def extract_labels(self, params):
-        params["tasks"] = Utils.get_dict_from_obj_list(params["tasks"])
+        if isinstance(params["tasks"],list):
+            params["tasks"] = Utils.get_dict_from_obj_list(params["tasks"])
         df_labels = pd.DataFrame()
         labels = []
         for task_name, task in params["tasks"].items():
