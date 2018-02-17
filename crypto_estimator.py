@@ -118,14 +118,56 @@ def main(argv):
                 name='close_at_-1',
                 generate_method=lambda x: features_extractor.compute_feature_at('close', -1, x)),
             Feature(
+                name='high_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('high', -2, x)),
+            Feature(
+                name='low_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('low', -2, x)),
+            Feature(
+                name='open_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('open', -2, x)),
+            Feature(
+                name='volumefrom_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumefrom', -2, x)),
+            Feature(
+                name='volumeto_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumeto', -2, x)),
+            Feature(
+                name='close_at_-2',
+                generate_method=lambda x: features_extractor.compute_feature_at('close', -2, x)),
+            Feature(
                 name='open_var_at_-1',
                 generate_method=lambda x: features_extractor.compute_variation_feature('open', -1, x)),
+            Feature(
+                name='open_var_at_-2',
+                generate_method=lambda x: features_extractor.compute_variation_feature('open', -2, x)),
             Feature(
                 name='close_var_at_-1',
                 generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
             Feature(
-                name='volume_mul',
-                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'mul', 'volumefrom', x)),
+                name='close_var_at_-2',
+                generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
+            Feature(
+                name='open_mean_at_-5',
+                generate_method=lambda x: features_extractor.mean('open', -5, x)),
+            Feature(
+                name='high_max_at_-5',
+                generate_method=lambda x: features_extractor.max('high', -5, x)),
+            Feature(
+                name='low_min_at_-5',
+                generate_method=lambda x: features_extractor.min('low', -5, x)),
+            Feature(
+                name='close_mean_at_-5',
+                generate_method=lambda x: features_extractor.mean('close', -5, x)),
+            Feature(
+                name='volumeto_mean_at_-5',
+                generate_method=lambda x: features_extractor.mean('volumeto', -5, x)),
+            Feature(
+                name='volumefrom_mean_at_-5',
+                generate_method=lambda x: features_extractor.mean('volumefrom', -5, x)),
+            Feature(
+                name='volume_diff',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'sub', 'volumefrom', x)),
             Feature(
                 name='volume_div',
                 generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'div', 'volumefrom',x))
