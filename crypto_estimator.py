@@ -20,6 +20,7 @@ import argparse
 import tensorflow as tf
 
 from controllers.CryptoBrain import CryptoBrain
+from misc.CorpusUtils import CorpusUtils
 from processors.FeaturesProcessor import FeaturesProcessor
 from processors.FeaturesExtractor import FeaturesExtractor
 from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
@@ -37,8 +38,8 @@ def main(argv):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
-    parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=100000, type=int, help='number of training steps')
+    parser.add_argument('--num_steps', default=100, type=int, help='number of recurrent steps')
+    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
@@ -54,7 +55,7 @@ def main(argv):
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'supervision_steps': 10,
+        'supervision_steps': 1,
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
@@ -73,6 +74,14 @@ def main(argv):
                 output_units=None,
                 output_activations=[None],
                 weight=20,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
+            ),
+
+            RegressionTask(
+                name="l_real_price",
+                output_units=None,
+                output_activations=[None],
+                weight=0,
                 generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
             ),
 
@@ -131,6 +140,9 @@ def main(argv):
                 generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'div', 'volumefrom',x))
         ]
     }
+
+    #CorpusUtils.produce_train_dev_test_from_full_corpus("corpusmonnaies/BTC-latest.csv")
+
     crypto_model = MultiLayerPerceptron()
     crypto_brain = CryptoBrain()
     crypto_brain.run(crypto_model, params)
