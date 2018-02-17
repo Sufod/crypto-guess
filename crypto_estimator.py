@@ -44,9 +44,9 @@ def main(argv):
 
     params = {
         'corpora': {
-            'train_corpus':'corpusmonnaies/BTC-train.csv',
-            'dev_corpus':'corpusmonnaies/BTC-dev.csv',
-            'test_corpus':'corpusmonnaies/BTC-test.csv',
+            'train_corpus':'corpusmonnaies/BTCZ-train.csv',
+            'dev_corpus':'corpusmonnaies/BTCZ-dev.csv',
+            'test_corpus':'corpusmonnaies/BTCZ-test.csv',
         },
         'optimizer': "Adam",
         'learning_rate': 0.0005,
@@ -73,7 +73,7 @@ def main(argv):
                 name="l_price_at_0",
                 output_units=None,
                 output_activations=[None],
-                weight=20,
+                weight=10,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
             ),
 
@@ -88,7 +88,7 @@ def main(argv):
             RegressionTask(
                 name="l_price_at_1",
                 output_units=[32, 16],
-                output_activations=[None, None],
+                output_activations=[tf.nn.tanh, None],
                 weight=2,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 1, x)
             ),
@@ -100,6 +100,15 @@ def main(argv):
                 weight=0,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x)
             ),
+
+            RegressionTask(
+                name="l_mean_at_5",
+                output_units=[32, 16],
+                output_activations=[None, None],
+                weight=10,
+                generate_method=lambda x: features_extractor.mean('open', 5, x)
+            )
+
         ],
         "features": [
             CorpusFeature(name='high'),
@@ -176,14 +185,14 @@ def main(argv):
                 generate_method=lambda x: features_extractor.mean('volumefrom', -5, x)),
             Feature(
                 name='volume_diff',
-                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'sub', 'volumefrom', x)),
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumefrom', 'sub', 'volumeto', x)),
             Feature(
                 name='volume_div',
-                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'div', 'volumefrom',x))
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumefrom', 'div', 'volumeto',x))
         ]
     }
 
-    CorpusUtils.produce_train_dev_test_from_full_corpus("corpusmonnaies/BTC-latest.csv")
+    # CorpusUtils.produce_train_dev_test_from_full_corpus("corpusmonnaies/ZEC-latest.csv")
 
     crypto_model = MultiLayerPerceptron()
     crypto_brain = CryptoBrain()
