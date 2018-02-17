@@ -32,23 +32,35 @@ class Utils:
 
     @staticmethod
     def resize_dataframes(features, labels):
-        # Cutting tails of features to match labels_size
-        labels_size = labels.shape[0]
-        features.drop(range(labels_size, features.shape[0]), inplace=True)
-
-        # Cutting heads of all vectors to match features first valid index
-        first_valid_index = -1
-        for column_name, column in features.items():
-            first_valid_index = max(first_valid_index, column.first_valid_index())
+        # Looking for first valid index in features and labels
+        first_valid_index = Utils.get_first_valid_index(features, labels)
+        # Cutting heads of labels and features to match first valid index
         features.drop(range(0, first_valid_index), inplace=True)
         labels.drop(range(0, first_valid_index), inplace=True)
 
+        # Looking for last valid index in features and labels
+        last_valid_index = Utils.get_last_valid_index(features, labels)
         # Cutting tails of all vectors to match features last valid index
+        features.drop(features.tail(features.index[-1] - last_valid_index).index, inplace=True)
+        labels.drop(labels.tail(labels.index[-1] - last_valid_index).index, inplace=True)
+
+    @staticmethod
+    def get_first_valid_index(features, labels):
+        first_valid_index = -1
+        for f_name, f in features.items():
+            first_valid_index = max(first_valid_index, f.first_valid_index())
+        for l_name, l in labels.items():
+            first_valid_index = max(first_valid_index, l.first_valid_index())
+        return first_valid_index
+
+    @staticmethod
+    def get_last_valid_index(features, labels):
         last_valid_index = float("inf")
-        for column_name, column in features.items():
-            last_valid_index = min(last_valid_index, column.last_valid_index())
-        features.drop((range(last_valid_index, column.shape[0])), inplace=True)
-        labels.drop(range(last_valid_index, column.shape[0]), inplace=True)
+        for f_name, f in features.items():
+            last_valid_index = min(last_valid_index, f.last_valid_index())
+        for l_name, l in labels.items():
+            last_valid_index = min(last_valid_index, l.last_valid_index())
+        return last_valid_index
 
     @staticmethod
     def get_dict_from_obj_list(obj_list):

@@ -74,7 +74,7 @@ def main(argv):
                 output_units=None,
                 output_activations=[None],
                 weight=20,
-                generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
             ),
 
             RegressionTask(
@@ -82,7 +82,7 @@ def main(argv):
                 output_units=None,
                 output_activations=[None],
                 weight=0,
-                generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
             ),
 
             RegressionTask(
@@ -90,7 +90,7 @@ def main(argv):
                 output_units=[32, 16],
                 output_activations=[None, None],
                 weight=2,
-                generate_method=lambda x: labels_extractor.compute_next_price_at(1, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 1, x)
             ),
 
             RegressionTask(
@@ -98,7 +98,7 @@ def main(argv):
                 output_units=[32, 16],
                 output_activations=[None, None],
                 weight=0,
-                generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x)
             ),
         ],
         "features": [
