@@ -20,33 +20,120 @@ import argparse
 import tensorflow as tf
 
 from controllers.CryptoBrain import CryptoBrain
-from models.CryptoModel import CryptoModel
+from processors.FeaturesProcessor import FeaturesProcessor
+from processors.FeaturesExtractor import FeaturesExtractor
+from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
+from features.CorpusFeature import CorpusFeature
+from features.Feature import Feature
+from models.MultiLayerPerceptron import MultiLayerPerceptron
+from tasks.ClassificationTask import ClassificationTask
+from tasks.RegressionTask import RegressionTask
 
 
 def main(argv):
+    labels_extractor = CryptoLabelsExtractor()
+    features_extractor = FeaturesExtractor()
+    features_preprocessor = FeaturesProcessor()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
-    parser.add_argument('--num_steps', default=100, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
+    parser.add_argument('--num_steps', default=1000, type=int, help='number of recurrent steps')
+    parser.add_argument('--train_steps', default=100000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
-        'init_scale': 0.01,
-        'hidden_units': [32, 64, 32],
-        #'hidden_activations': [tf.nn.relu, tf.nn.relu, tf.nn.relu],
-        'hidden_activations': [None, None, None],
-        'output_units': [16, 16, 16, 16],
-        #'output_activations': [tf.nn.tanh, tf.nn.tanh, tf.nn.tanh, tf.nn.tanh],
-        'output_activations': [None, None, None, None],
+        'corpora': {
+            'train_corpus':'corpusmonnaies/BTC-train.csv',
+            'dev_corpus':'corpusmonnaies/BTC-dev.csv',
+            'test_corpus':'corpusmonnaies/BTC-test.csv',
+        },
+        'optimizer': "Adam",
+        'learning_rate': 0.0005,
+        'max_grad_norm': 0.1,
+        'init_scale': 0.5,
+        'batch_size': args.batch_size,
+        'num_steps': args.num_steps,
+        'train_steps': args.train_steps,
+        'supervision_steps': 10,
+        'hidden_units': [64, 32],
+        'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
-        'learning_rate': 0.01,
-        'n_tasks': 4,
-        'n_classes': [3,1,1,1],
-            }
+        'tasks': [
+            ClassificationTask(
+                name="l_variation_sign",
+                output_units=None,
+                output_activations=None,
+                weight=0,
+                nb_classes=2,
+                generate_method=lambda x: labels_extractor.compute_variation_sign(x)
+            ),
 
-    model=CryptoModel()
-    network=CryptoBrain()
-    network.run(args.batch_size,args.num_steps,args.train_steps,model,params)
+            RegressionTask(
+                name="l_price_at_0",
+                output_units=None,
+                output_activations=[None],
+                weight=20,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(0, x)
+            ),
+
+            RegressionTask(
+                name="l_price_at_1",
+                output_units=[32, 16],
+                output_activations=[None, None],
+                weight=2,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(1, x)
+            ),
+
+            RegressionTask(
+                name="l_price_at_2",
+                output_units=[32, 16],
+                output_activations=[None, None],
+                weight=0,
+                generate_method=lambda x: labels_extractor.compute_next_price_at(2, x)
+            ),
+        ],
+        "features": [
+            CorpusFeature(name='high'),
+            CorpusFeature(name='low'),
+            CorpusFeature(name='open'),
+            CorpusFeature(name='volumefrom'),
+            CorpusFeature(name='volumeto'),
+            CorpusFeature(name='close'),
+            Feature(
+                name='high_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('high', -1, x)),
+            Feature(
+                name='low_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('low', -1, x)),
+            Feature(
+                name='open_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('open', -1, x)),
+            Feature(
+                name='volumefrom_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumefrom', -1, x)),
+            Feature(
+                name='volumeto_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('volumeto', -1, x)),
+            Feature(
+                name='close_at_-1',
+                generate_method=lambda x: features_extractor.compute_feature_at('close', -1, x)),
+            Feature(
+                name='open_var_at_-1',
+                generate_method=lambda x: features_extractor.compute_variation_feature('open', -1, x)),
+            Feature(
+                name='close_var_at_-1',
+                generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
+            Feature(
+                name='volume_mul',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'mul', 'volumefrom', x)),
+            Feature(
+                name='volume_div',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'div', 'volumefrom',x))
+        ]
+    }
+    crypto_model = MultiLayerPerceptron()
+    crypto_brain = CryptoBrain()
+    crypto_brain.run(crypto_model, params)
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
