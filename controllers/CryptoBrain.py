@@ -52,17 +52,23 @@ class CryptoBrain:
             #
             # Evaluate the model on dev set.
             self.evaluate(classifier, params, dev_features, dev_labels, visualize, 'Dev')
+            #
+            # Gamble on dev set.
+            self.gambling(classifier, dev_features, dev_labels)
 
         #
         #
         # Evaluate the model on test set.
         self.evaluate(classifier, params, test_features, test_labels, True, 'Test')
 
+        #
+        #
         # Gamble
+        self.gambling(classifier, test_features, test_labels)
 
+    def gambling(self, classifier, test_features, test_labels):
         predictions = classifier.predict(
             input_fn=lambda: DataConverter.eval_input_fn(test_features, labels=None, batch_size=1))
-
         l_real_price = test_labels['l_real_price']
         first_valid_index = l_real_price[l_real_price.first_valid_index()]
         crypto_gambler = CryptoGambler(first_valid_index)
@@ -86,9 +92,7 @@ class CryptoBrain:
 
                 last_predict = pred_dict['regressions_l_price_at_1']
                 last_real = real
-
         labels_shape = l_real_price[test_labels.shape[0]]
-
         Logger.bold("Bad Gambler:")
         crypto_gambler_bad.get_evaluation_results(labels_shape)
         Logger.bold("Baseline Gambler:")
