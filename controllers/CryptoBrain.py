@@ -1,8 +1,10 @@
+from evaluate.CryptoGambler import CryptoGambler
 from loaders.DataLoader import DataLoader
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from misc.Logger import Logger
 from processors.DataConverter import DataConverter
 from tasks.RegressionTask import RegressionTask
 
@@ -50,11 +52,55 @@ class CryptoBrain:
             #
             # Evaluate the model on dev set.
             self.evaluate(classifier, params, dev_features, dev_labels, visualize, 'Dev')
+            #
+            # Gamble on dev set.
+            self.gambling(classifier, dev_features, dev_labels)
 
         #
         #
         # Evaluate the model on test set.
         self.evaluate(classifier, params, test_features, test_labels, True, 'Test')
+
+        #
+        #
+        # Gamble
+        self.gambling(classifier, test_features, test_labels)
+
+    def gambling(self, classifier, test_features, test_labels):
+        predictions = classifier.predict(
+            input_fn=lambda: DataConverter.eval_input_fn(test_features, labels=None, batch_size=1))
+        l_real_price = test_labels['l_real_price']
+        first_valid_index = l_real_price[l_real_price.first_valid_index()]
+        crypto_gambler = CryptoGambler(first_valid_index)
+        crypto_gambler_oracle = CryptoGambler(first_valid_index)
+        crypto_gambler_bad = CryptoGambler(first_valid_index)
+        crypto_gambler_baseline = CryptoGambler(first_valid_index)
+        last_predict = 0.0
+        last_real = 0.0
+        for pred_dict, real in zip(predictions, l_real_price):
+            if last_predict == 0.0:
+                last_real = real
+                last_predict = pred_dict['regressions_l_price_at_1']
+            else:
+                oracle_predicted_diff = real - last_real
+                predicted_diff = pred_dict['regressions_l_price_at_1'] - last_predict
+
+                crypto_gambler_oracle.evaluate_new_sample(last_real, oracle_predicted_diff)
+                crypto_gambler.evaluate_new_sample(real, predicted_diff)
+                crypto_gambler_bad.evaluate_new_sample(last_real, -oracle_predicted_diff)
+                crypto_gambler_baseline.evaluate_new_sample(real, oracle_predicted_diff)
+
+                last_predict = pred_dict['regressions_l_price_at_1']
+                last_real = real
+        labels_shape = l_real_price[test_labels.shape[0]]
+        Logger.bold("Bad Gambler:")
+        crypto_gambler_bad.get_evaluation_results(labels_shape)
+        Logger.bold("Baseline Gambler:")
+        crypto_gambler_baseline.get_evaluation_results(labels_shape)
+        Logger.bold("Eval Gambler:")
+        crypto_gambler.get_evaluation_results(labels_shape)
+        Logger.bold("Oracle Gambler:")
+        crypto_gambler_oracle.get_evaluation_results(labels_shape)
 
     def evaluate(self, classifier, params, features, labels, visualize=False, mode='Train'):
         eval_result = classifier.evaluate(

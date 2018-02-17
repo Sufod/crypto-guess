@@ -202,13 +202,55 @@ class FeaturesExtractor:
         new_column[feature_name] = current - previous
         return new_column
 
-    def compute_max_feature(self, target_feature_name, nb, args):
+    def mean(self, target_feature_name, nb, args):
+
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
-        current = features[target_feature_name]
-        previous = features[target_feature_name].shift(-nb)
-        new_column[feature_name] = current - previous
+
+        window = pd.DataFrame()
+        window[feature_name + '_0'] = features[target_feature_name]
+        for i in range(1, -nb):
+            window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
+
+        new_column = pd.DataFrame()
+        new_column[feature_name] = window.mean(1)
+        for i in range(0, -(nb+1)):
+            new_column[feature_name][i] = float('nan')
+
+        return new_column
+
+    def min(self, target_feature_name, nb, args):
+
+        feature_name = args[0]
+        features = args[1]
+
+        window = pd.DataFrame()
+        window[feature_name + '_0'] = features[target_feature_name]
+        for i in range(1, -nb):
+            window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
+
+        new_column = pd.DataFrame()
+        new_column[feature_name] = window.min(1)
+        for i in range(0, -(nb+1)):
+            new_column[feature_name][i] = float('nan')
+
+        return new_column
+
+    def max(self, target_feature_name, nb, args):
+
+        feature_name = args[0]
+        features = args[1]
+
+        window = pd.DataFrame()
+        window[feature_name + '_0'] = features[target_feature_name]
+        for i in range(1, -nb):
+            window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
+
+        new_column = pd.DataFrame()
+        new_column[feature_name] = window.max(1)
+        for i in range(0, -(nb+1)):
+            new_column[feature_name][i] = float('nan')
+
         return new_column
 
 
