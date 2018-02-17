@@ -121,8 +121,14 @@ def main(argv):
                 name='open_var_at_-1',
                 generate_method=lambda x: features_extractor.compute_variation_feature('open', -1, x)),
             Feature(
-                name='volume_diff',
-                generate_method=lambda x: features_extractor.compute_diff_feature('volumeto', 'volumefrom', x))
+                name='close_var_at_-1',
+                generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
+            Feature(
+                name='volume_mul',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'mul', 'volumefrom', x)),
+            Feature(
+                name='volume_div',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'div', 'volumefrom',x))
         ]
     }
     crypto_model = MultiLayerPerceptron()
