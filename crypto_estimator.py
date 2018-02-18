@@ -32,6 +32,7 @@ from tasks.RegressionTask import RegressionTask
 
 def main(argv):
     features_extractor = FeaturesExtractor()
+    features_processor = FeaturesProcessor()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
@@ -219,6 +220,9 @@ def main(argv):
                 type='float',
                 generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'sub', 'volumefrom',
                                                                                         x))
+        ],
+        "post_process_features": [
+            lambda x: features_processor.create_context_window(2, x)
         ]
     }
 

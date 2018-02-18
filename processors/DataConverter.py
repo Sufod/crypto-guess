@@ -16,21 +16,25 @@ class DataConverter:
     def __init__(self, corpus):
         self.corpus = corpus
 
-    def perform(self, fun, *args):
-        return fun(*args)
-
     def generate_features_and_labels(self, params):
-        # self.features_preprocessor.preprocess_features(self.corpus)
         features_params = self.extract_features_params(params["features"])
         tasks_params = self.extract_tasks_params(params["tasks"])
 
         labels = self.extract_labels(tasks_params)
         features = self.extract_features(features_params)
 
-        Utils.resize_dataframes(features, labels)
         self.normalize_labels(labels, tasks_params)
         self.normalize_features(features, features_params)
+
+        features = self.post_process_features(features, params["post_process_features"])
+        Utils.resize_dataframes(features, labels)
+
         return features, labels
+
+    def post_process_features(self, features, post_process_methods):
+        for method in post_process_methods:
+            features = features.join(method(features))
+        return features
 
     def normalize_labels(self, labels, tasks_params):
         tasks_dict = tasks_params[1]
@@ -43,6 +47,9 @@ class DataConverter:
         for feature_name, feature in features_dict.items():
             if feature.normalization is not False:
                 features[feature_name] = feature.normalization(features[feature_name])
+
+    def perform(self, fun, *args):
+        return fun(*args)
 
     def extract_features(self, features_params):
         corpus_features_names = features_params[0]
