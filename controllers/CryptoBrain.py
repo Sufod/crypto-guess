@@ -12,7 +12,6 @@ from tasks.RegressionTask import RegressionTask
 class CryptoBrain:
 
     def run(self, model, params):
-        #data_loader = DataLoader(params)
 
         with DataLoader(params) as data_loader:
             # Fetch the training data

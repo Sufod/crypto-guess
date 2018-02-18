@@ -8,8 +8,12 @@ class FeaturesProcessor:
             if feature_name != 'l_real_price':
                 min = features[feature_name].min()
                 max = features[feature_name].max()
-                min2 = min - 3 * (max - min) / 2
-                max2 = max + 3 * (max - min) / 2
+                ratio = 0 # 0 - 1
+                # ratio = 1/2  # 0.25 - 0.75
+                # ratio = 1  # 0 - 1
+                # ratio = 3/2 #0.33 - 0.66
+                min2 = min - ratio * (max - min)
+                max2 = max + ratio * (max - min)
                 features[feature_name] = ((features[feature_name] - min2) / (max2 - min2))
 
         # features['open'] = features['open'] * 0.01
