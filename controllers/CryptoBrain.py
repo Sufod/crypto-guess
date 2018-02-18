@@ -1,4 +1,5 @@
 from evaluate.CryptoGambler import CryptoGambler
+from features.SymbolicFeature import SymbolicFeature
 from loaders.DataLoader import DataLoader
 
 import tensorflow as tf
@@ -34,7 +35,7 @@ class CryptoBrain:
         # Feature columns describe how to use the input.
         model_feature_columns = []
         for feature in params['features']:
-            if feature.type == 'value':
+            if isinstance(feature, SymbolicFeature):
                 x = tf.feature_column.categorical_column_with_vocabulary_list(key=feature.name,
                                                                               vocabulary_list=feature.vocabulary,
                                                                               num_oov_buckets=2)

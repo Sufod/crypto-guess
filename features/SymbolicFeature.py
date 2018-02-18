@@ -1,15 +1,15 @@
-class CorpusFeature:
+class SymbolicFeature:
 
-    def __init__(self, name, type='float', vocabulary=None, embedding_units=None, input_units=None, input_activations=None,
-                 normalize=lambda feature: CorpusFeature.default_normalization(feature),
-                 normalize_inflow=False
-                 ):
+    def __init__(self, name, type, vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
+                 normalize=False,
+                 normalize_inflow=False):
         self._name = name
         self._type = type
         self._vocabulary = vocabulary
         self._embedding_units = embedding_units
         self._input_units = input_units
         self._input_activations = input_activations
+        self._generate_method = generate_method
         self._normalization = normalize
         self._inflow_normalization = normalize_inflow
 
@@ -48,6 +48,10 @@ class CorpusFeature:
     @property
     def input_activations(self):
         return self._input_activations
+
+    @property
+    def generate_method(self):
+        return self._generate_method
 
     @property
     def normalization(self):

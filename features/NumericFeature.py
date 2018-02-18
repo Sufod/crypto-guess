@@ -1,10 +1,9 @@
-class Feature:
+class NumericFeature:
 
-    def __init__(self, name, type, vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
-                 normalize=lambda feature: Feature.default_normalization(feature),
+    def __init__(self, name, vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
+                 normalize=lambda feature: NumericFeature.default_normalization(feature),
                  normalize_inflow=False):
         self._name = name
-        self._type = type
         self._vocabulary = vocabulary
         self._embedding_units = embedding_units
         self._input_units = input_units
@@ -28,10 +27,6 @@ class Feature:
     @property
     def name(self):
         return self._name
-
-    @property
-    def type(self):
-        return self._type
 
     @property
     def vocabulary(self):

@@ -5,7 +5,6 @@ from processors.FeaturesProcessor import FeaturesProcessor
 from processors.FeaturesExtractor import FeaturesExtractor
 
 from misc.Utils import Utils
-from features.CorpusFeature import CorpusFeature
 from tasks.RegressionTask import RegressionTask
 
 
@@ -17,7 +16,7 @@ class DataConverter:
         self.corpus = corpus
 
     def generate_features_and_labels(self, params):
-        features_params = self.extract_features_params(params["features"])
+        features_params = self.extract_features_params(params["corpus_features"],params["features"])
         tasks_params = self.extract_tasks_params(params["tasks"])
 
         labels = self.extract_labels(tasks_params)
@@ -119,16 +118,17 @@ class DataConverter:
         return dataset
 
     @staticmethod
-    def extract_features_params(features_list):
+    def extract_features_params(corpus_features_list, features_list):
         corpus_features_names = []
-        features_names = []
         features_dict = {}
+        for corpus_feature in corpus_features_list:
+            corpus_features_names.append(corpus_feature.name)
+            features_dict[corpus_feature.name]=corpus_feature
+
+        features_names = []
         for feature in features_list:
             features_dict[feature.name] = feature
-            if isinstance(feature, CorpusFeature):
-                corpus_features_names.append(feature.name)
-            else:
-                features_names.append(feature.name)
+            features_names.append(feature.name)
         return corpus_features_names, features_names, features_dict
 
     @staticmethod
