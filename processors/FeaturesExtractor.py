@@ -3,27 +3,27 @@ import numpy as np
 
 
 class FeaturesExtractor:
-    
+
     def add_feature_to_dataframe(self, dataframe, feature_name, feature_list):
         return pd.concat([dataframe, pd.DataFrame(data={feature_name: pd.Series(data=feature_list)})], axis=1)
-    
+
     #
     #
     # data retrieval
     def compute_feature_at(self, target_feature_name, nb, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = features[target_feature_name].shift(-nb)
         return new_column
-    
+
     #
     #
     # arithmetic transformation between features
     def compute_arithmetic_feature(self, f1_name, op, f2_name, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
 
         if op == 'add':
             new_column[feature_name] = self.add(f1_name, f2_name, args)
@@ -47,37 +47,37 @@ class FeaturesExtractor:
 
     def opp(self, target_feature_name, args):
         feature_name = args[0]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = self.cst_sub(target_feature_name, 0, args)
         return new_column
 
     def inv(self, target_feature_name, args):
         feature_name = args[0]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = self.cst_div(target_feature_name, 1, args)
         return new_column
-    
+
     def add(self, f1_name, f2_name, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = features[f1_name].add(features[f2_name], axis=0, level=None, fill_value=None)
         return new_column
-    
+
     def sub(self, f1_name, f2_name, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = features[f1_name].sub(features[f2_name], axis=0, level=None, fill_value=None)
         return new_column
-    
+
     def mul(self, f1_name, f2_name, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = features[f1_name].mul(features[f2_name], axis=0, level=None, fill_value=None)
         return new_column
-    
+
     def div(self, f1_name, f2_name, args):
         feature_name = args[0]
         features = args[1]
@@ -136,7 +136,7 @@ class FeaturesExtractor:
         new_column = pd.DataFrame()
         new_column[feature_name] = features[target_feature_name].rsub(cst, axis=0, level=None, fill_value=None)
         return new_column
-    
+
     def mul_cst(self, target_feature_name, cst, args):
         feature_name = args[0]
         features = args[1]
@@ -154,7 +154,7 @@ class FeaturesExtractor:
     def cst_div(self, target_feature_name, cst, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         new_column[feature_name] = features[target_feature_name].rdiv(cst, axis=0, level=None, fill_value=None)
 
         for index, item in new_column[feature_name].items():
@@ -189,14 +189,13 @@ class FeaturesExtractor:
 
         return new_column
 
-
     #
     #
     # analytic transformation of one feature
     def compute_variation_feature(self, target_feature_name, nb, args):
         feature_name = args[0]
         features = args[1]
-        new_column=pd.DataFrame()
+        new_column = pd.DataFrame()
         current = features[target_feature_name]
         previous = features[target_feature_name].shift(-nb)
         new_column[feature_name] = current - previous
@@ -214,7 +213,7 @@ class FeaturesExtractor:
                 window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
             new_column = pd.DataFrame()
             new_column[feature_name] = window.mean(1)
-            for i in range(0, -(nb+1)):
+            for i in range(0, -(nb + 1)):
                 new_column[feature_name][i] = float('nan')
         if nb > 0:
             for i in range(1, nb):
@@ -222,7 +221,7 @@ class FeaturesExtractor:
             new_column = pd.DataFrame()
             new_column[feature_name] = window.mean(1)
             for i in range(0, nb - 1):
-                new_column[feature_name][features.shape[0]-i-1] = float('nan')
+                new_column[feature_name][features.shape[0] - i - 1] = float('nan')
 
         return new_column
 
@@ -238,7 +237,7 @@ class FeaturesExtractor:
 
         new_column = pd.DataFrame()
         new_column[feature_name] = window.min(1)
-        for i in range(0, -(nb+1)):
+        for i in range(0, -(nb + 1)):
             new_column[feature_name][i] = float('nan')
 
         return new_column
@@ -255,11 +254,10 @@ class FeaturesExtractor:
 
         new_column = pd.DataFrame()
         new_column[feature_name] = window.max(1)
-        for i in range(0, -(nb+1)):
+        for i in range(0, -(nb + 1)):
             new_column[feature_name][i] = float('nan')
 
         return new_column
-
 
     # def add_feature_history_window_mlp(self, window_size, args):
     #     corpus=args[0]

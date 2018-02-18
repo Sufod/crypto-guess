@@ -25,6 +25,7 @@ from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
 from features.CorpusFeature import CorpusFeature
 from features.Feature import Feature
 from models.MultiLayerPerceptron import MultiLayerPerceptron
+from processors.FeaturesProcessor import FeaturesProcessor
 from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
 
@@ -81,7 +82,8 @@ def main(argv):
                 output_units=None,
                 output_activations=[None],
                 weight=0,
-                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x),
+                normalize=False,
             ),
 
             RegressionTask(
@@ -97,7 +99,9 @@ def main(argv):
                 output_units=[32, 16],
                 output_activations=[None, None],
                 weight=0,
-                generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x),
+                normalize_inflow=lambda x: FeaturesProcessor.normalize_series(x),
+                normalize=False
             ),
 
             RegressionTask(

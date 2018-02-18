@@ -5,6 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from misc.Logger import Logger
+from misc.Utils import Utils
 from processors.DataConverter import DataConverter
 from tasks.RegressionTask import RegressionTask
 
@@ -23,6 +24,7 @@ class CryptoBrain:
             # Fetch the test data
             test_features, test_labels = data_loader.load_test_dataframes()
 
+        params["tasks"] = Utils.get_dict_from_obj_list(params["tasks"])
         Z = 0
         for task_name in params['tasks'].keys():
             Z += params['tasks'][task_name].weight
