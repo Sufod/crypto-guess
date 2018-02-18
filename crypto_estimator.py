@@ -22,7 +22,6 @@ import tensorflow as tf
 from controllers.CryptoBrain import CryptoBrain
 
 from processors.FeaturesExtractor import FeaturesExtractor
-from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
 from features.CorpusFeature import CorpusFeature
 from features.Feature import Feature
 from models.MultiLayerPerceptron import MultiLayerPerceptron
@@ -32,7 +31,6 @@ from tasks.RegressionTask import RegressionTask
 
 
 def main(argv):
-    labels_extractor = CryptoLabelsExtractor()
     features_extractor = FeaturesExtractor()
 
     parser = argparse.ArgumentParser()
