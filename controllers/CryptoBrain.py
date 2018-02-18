@@ -33,8 +33,15 @@ class CryptoBrain:
 
         # Feature columns describe how to use the input.
         model_feature_columns = []
-        for feature in train_features.keys():
-            model_feature_columns.append(tf.feature_column.numeric_column(key=feature))
+        for feature in params['features']:
+            if feature.type == 'value':
+                x = tf.feature_column.categorical_column_with_vocabulary_list(key=feature.name,
+                                                                              vocabulary_list=feature.vocabulary,
+                                                                              num_oov_buckets=2)
+                y = tf.feature_column.embedding_column(x, dimension=feature.embedding_units)
+                model_feature_columns.append(y)
+            else:
+                model_feature_columns.append(tf.feature_column.numeric_column(key=feature.name))
         params['feature_columns'] = model_feature_columns
 
         classifier = tf.estimator.Estimator(model_fn=model.model_fn, params=params)

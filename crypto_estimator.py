@@ -56,7 +56,7 @@ def main(argv):
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'supervision_steps': 50,
+        'supervision_steps': 10,
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
@@ -66,15 +66,15 @@ def main(argv):
                 output_units=None,
                 output_activations=None,
                 weight=0,
-                nb_classes=2,
-                generate_method=lambda x: labels_extractor.compute_variation_sign(x)
+                nb_classes=4,
+                generate_method=lambda x: features_extractor.compute_variation_sign_at('open', 1, x)
             ),
 
             RegressionTask(
                 name="l_price_at_0",
                 output_units=None,
                 output_activations=[None],
-                weight=0,
+                weight=10,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
             ),
 
@@ -91,7 +91,7 @@ def main(argv):
                 name="l_price_at_1",
                 output_units=[32, 16],
                 output_activations=[tf.nn.tanh, None],
-                weight=10,
+                weight=1,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 1, x)
             ),
 
@@ -115,84 +115,111 @@ def main(argv):
 
         ],
         "features": [
-            CorpusFeature(name='high'),
-            CorpusFeature(name='low'),
-            CorpusFeature(name='open'),
-            CorpusFeature(name='volumefrom'),
-            CorpusFeature(name='volumeto'),
-            CorpusFeature(name='close'),
+            CorpusFeature(name='high', type='float'),
+            CorpusFeature(name='low', type='float'),
+            CorpusFeature(name='open', type='float'),
+            CorpusFeature(name='close', type='float'),
+            CorpusFeature(name='volumefrom', type='float'),
+            CorpusFeature(name='volumeto', type='float'),
+            Feature(
+                name='open_varsign_at_-1',
+                type='value',
+                vocabulary=('CC', 'C', 'D', 'DD'),
+                embedding_units=4,
+                normalize=False,
+                generate_method=lambda x: features_extractor.compute_variation_sign_at('open', -1, x)),
             Feature(
                 name='high_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('high', -1, x)),
             Feature(
                 name='low_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('low', -1, x)),
             Feature(
                 name='open_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('open', -1, x)),
             Feature(
                 name='volumefrom_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('volumefrom', -1, x)),
             Feature(
                 name='volumeto_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('volumeto', -1, x)),
             Feature(
                 name='close_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('close', -1, x)),
             Feature(
                 name='high_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('high', -2, x)),
             Feature(
                 name='low_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('low', -2, x)),
             Feature(
                 name='open_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('open', -2, x)),
             Feature(
                 name='volumefrom_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('volumefrom', -2, x)),
             Feature(
                 name='volumeto_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('volumeto', -2, x)),
             Feature(
                 name='close_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_feature_at('close', -2, x)),
             Feature(
                 name='open_var_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_variation_feature('open', -1, x)),
             Feature(
                 name='open_var_at_-2',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_variation_feature('open', -2, x)),
             Feature(
                 name='close_var_at_-1',
+                type='float',
                 generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
             Feature(
                 name='close_var_at_-2',
-                generate_method=lambda x: features_extractor.compute_variation_feature('close', -1, x)),
+                type='float',
+                generate_method=lambda x: features_extractor.compute_variation_feature('close', -2, x)),
             Feature(
                 name='open_mean_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.mean('open', -5, x)),
             Feature(
                 name='high_max_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.max('high', -5, x)),
             Feature(
                 name='low_min_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.min('low', -5, x)),
             Feature(
                 name='close_mean_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.mean('close', -5, x)),
             Feature(
                 name='volumeto_mean_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.mean('volumeto', -5, x)),
             Feature(
                 name='volumefrom_mean_at_-5',
+                type='float',
                 generate_method=lambda x: features_extractor.mean('volumefrom', -5, x)),
             Feature(
                 name='volume_diff',
-                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumefrom', 'sub', 'volumeto', x)),
-            Feature(
-                name='volume_div',
-                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumefrom', 'div', 'volumeto',x))
+                type='float',
+                generate_method=lambda x: features_extractor.compute_arithmetic_feature('volumeto', 'sub', 'volumefrom', x))
         ]
     }
 
@@ -203,3 +230,6 @@ def main(argv):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
+
+
+

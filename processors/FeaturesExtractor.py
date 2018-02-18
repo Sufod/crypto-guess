@@ -201,6 +201,17 @@ class FeaturesExtractor:
         new_column[feature_name] = current - previous
         return new_column
 
+    def compute_variation_sign_at(self, target_feature_name, nb, args):
+        feature_name = args[0]
+        features = args[1]
+        new_column=pd.DataFrame()
+        current = features[target_feature_name]
+        previous = features[target_feature_name].shift(-nb)
+        var = current - previous
+        # new_column[feature_name] = var.apply(lambda x: ['D', 'C'][x > 0])
+        new_column[feature_name] = var.apply(lambda x: [['D', 'DD'][x < -10], ['C', 'CC'][x > 10]][x > 0])
+        return new_column
+
     def mean(self, target_feature_name, nb, args):
 
         feature_name = args[0]

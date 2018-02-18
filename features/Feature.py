@@ -1,8 +1,12 @@
 class Feature:
-    def __init__(self, name, input_units=None, input_activations=None, generate_method=None,
+
+    def __init__(self, name, type, vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
                  normalize=lambda feature: Feature.default_normalization(feature),
                  normalize_inflow=False):
         self._name = name
+        self._type = type
+        self._vocabulary = vocabulary
+        self._embedding_units = embedding_units
         self._input_units = input_units
         self._input_activations = input_activations
         self._generate_method = generate_method
@@ -24,6 +28,18 @@ class Feature:
     @property
     def name(self):
         return self._name
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def vocabulary(self):
+        return self._vocabulary
+
+    @property
+    def embedding_units(self):
+        return self._embedding_units
 
     @property
     def input_units(self):

@@ -11,4 +11,3 @@ class FeaturesProcessor:
         min2 = min_value - ratio * (max_value - min_value)
         max2 = max_value + ratio * (max_value - min_value)
         return (series - min2) / (max2 - min2)
-
