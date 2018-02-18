@@ -27,7 +27,7 @@ class Logger:
     def bold(message):
         print(Logger.BOLD + message + Logger.ENDC)
 
-    def header(message):
+    def underline(message):
         print(Logger.UNDERLINE + message + Logger.ENDC)
 
     def header(message):

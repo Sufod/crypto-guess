@@ -80,20 +80,14 @@ class DataConverter:
         return self.corpus
 
     def extract_labels(self, params):
-        if isinstance(params["tasks"],list):
+        if isinstance(params["tasks"], list):
             params["tasks"] = Utils.get_dict_from_obj_list(params["tasks"])
-        df_labels = pd.DataFrame()
-        labels = []
+
+        labels = pd.DataFrame()
         for task_name, task in params["tasks"].items():
-            labels.append(self.perform(task.generate_method, (task_name, self.corpus)))
-        # Cutting tail of all vectors until labels last valid index
-        last_index = float("inf")
-        for column in labels:
-            last_index = min(last_index, column.last_valid_index())
-        for column in labels:
-            test = column.drop(range(last_index, column.shape[0]))
-            df_labels = pd.concat([df_labels, test], axis=1)
-        return df_labels
+            labels = pd.concat([labels, self.perform(task.generate_method, (task_name, self.corpus))], axis=1)
+
+        return labels
 
     def extract_features_params(self, params):
         corpus_features_names = []

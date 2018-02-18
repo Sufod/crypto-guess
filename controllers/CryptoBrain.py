@@ -12,15 +12,16 @@ from tasks.RegressionTask import RegressionTask
 class CryptoBrain:
 
     def run(self, model, params):
-        data_loader = DataLoader()
-        # Fetch the training data
-        train_features, train_labels = data_loader.load_train_dataframes(params)
 
-        # Fetch the validation data
-        dev_features, dev_labels = data_loader.load_dev_dataframes(params)
+        with DataLoader(params) as data_loader:
+            # Fetch the training data
+            train_features, train_labels = data_loader.load_train_dataframes()
 
-        # Fetch the test data
-        test_features, test_labels = data_loader.load_test_dataframes(params)
+            # Fetch the validation data
+            dev_features, dev_labels = data_loader.load_dev_dataframes()
+
+            # Fetch the test data
+            test_features, test_labels = data_loader.load_test_dataframes()
 
         Z = 0
         for task_name in params['tasks'].keys():

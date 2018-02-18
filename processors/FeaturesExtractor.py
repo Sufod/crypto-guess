@@ -209,13 +209,20 @@ class FeaturesExtractor:
 
         window = pd.DataFrame()
         window[feature_name + '_0'] = features[target_feature_name]
-        for i in range(1, -nb):
-            window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
-
-        new_column = pd.DataFrame()
-        new_column[feature_name] = window.mean(1)
-        for i in range(0, -(nb+1)):
-            new_column[feature_name][i] = float('nan')
+        if nb < 0:
+            for i in range(1, -nb):
+                window[feature_name + '_' + str(i)] = features[target_feature_name].shift(i)
+            new_column = pd.DataFrame()
+            new_column[feature_name] = window.mean(1)
+            for i in range(0, -(nb+1)):
+                new_column[feature_name][i] = float('nan')
+        if nb > 0:
+            for i in range(1, nb):
+                window[feature_name + '_' + str(i)] = features[target_feature_name].shift(-i)
+            new_column = pd.DataFrame()
+            new_column[feature_name] = window.mean(1)
+            for i in range(0, nb - 1):
+                new_column[feature_name][features.shape[0]-i-1] = float('nan')
 
         return new_column
 
