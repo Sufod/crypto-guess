@@ -20,12 +20,13 @@ import argparse
 import tensorflow as tf
 
 from controllers.CryptoBrain import CryptoBrain
-from processors.FeaturesProcessor import FeaturesProcessor
+
 from processors.FeaturesExtractor import FeaturesExtractor
 from processors.CryptoLabelsExtractor import CryptoLabelsExtractor
 from features.CorpusFeature import CorpusFeature
 from features.Feature import Feature
 from models.MultiLayerPerceptron import MultiLayerPerceptron
+from processors.FeaturesProcessor import FeaturesProcessor
 from tasks.ClassificationTask import ClassificationTask
 from tasks.RegressionTask import RegressionTask
 
@@ -33,7 +34,6 @@ from tasks.RegressionTask import RegressionTask
 def main(argv):
     labels_extractor = CryptoLabelsExtractor()
     features_extractor = FeaturesExtractor()
-    features_preprocessor = FeaturesProcessor()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
@@ -43,11 +43,11 @@ def main(argv):
 
     params = {
         'corpora': {
-            'autogen': 'corpusmonnaies/BTCZ-latest.csv',
+            'autogen': 'corpusmonnaies/BTC-latest.csv',
             # Below values are ignored if autogen is set
-            'train':'corpusmonnaies/BTCZ-train.csv',
-            'dev':'corpusmonnaies/BTCZ-dev.csv',
-            'test':'corpusmonnaies/BTCZ-test.csv',
+            'train':'corpusmonnaies/BTC-train.csv',
+            'dev':'corpusmonnaies/BTC-dev.csv',
+            'test':'corpusmonnaies/BTC-test.csv'
         },
         'optimizer': "Adam",
         'learning_rate': 0.0005,
@@ -83,7 +83,8 @@ def main(argv):
                 output_units=None,
                 output_activations=[None],
                 weight=0,
-                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x),
+                normalize=False
             ),
 
             RegressionTask(
@@ -99,7 +100,9 @@ def main(argv):
                 output_units=[32, 16],
                 output_activations=[None, None],
                 weight=0,
-                generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x)
+                generate_method=lambda x: features_extractor.compute_feature_at('open', 2, x),
+                normalize_inflow=lambda x: FeaturesProcessor.normalize_series(x),
+                normalize=False
             ),
 
             RegressionTask(
