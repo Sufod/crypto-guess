@@ -38,7 +38,7 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', default=100, type=int, help='batch size')
     parser.add_argument('--num_steps', default=100, type=int, help='number of recurrent steps')
-    parser.add_argument('--train_steps', default=100000, type=int, help='number of training steps')
+    parser.add_argument('--train_steps', default=50000, type=int, help='number of training steps')
     args = parser.parse_args(argv[1:])
 
     params = {
@@ -56,7 +56,7 @@ def main(argv):
         'batch_size': args.batch_size,
         'num_steps': args.num_steps,
         'train_steps': args.train_steps,
-        'supervision_steps': 10,
+        'supervision_steps': 50,
         'hidden_units': [64, 32],
         'hidden_activations': [None, None],
         'dropout_rate': [0.0, 0.0, 0.0],
@@ -74,7 +74,7 @@ def main(argv):
                 name="l_price_at_0",
                 output_units=None,
                 output_activations=[None],
-                weight=10,
+                weight=0,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 0, x)
             ),
 
@@ -90,7 +90,7 @@ def main(argv):
                 name="l_price_at_1",
                 output_units=[32, 16],
                 output_activations=[tf.nn.tanh, None],
-                weight=2,
+                weight=10,
                 generate_method=lambda x: features_extractor.compute_feature_at('open', 1, x)
             ),
 
@@ -105,8 +105,8 @@ def main(argv):
             RegressionTask(
                 name="l_mean_at_5",
                 output_units=[32, 16],
-                output_activations=[None, None],
-                weight=10,
+                output_activations=[tf.nn.tanh, None],
+                weight=1,
                 generate_method=lambda x: features_extractor.mean('open', 5, x)
             )
 
