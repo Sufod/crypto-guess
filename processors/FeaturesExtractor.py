@@ -192,7 +192,7 @@ class FeaturesExtractor:
     #
     #
     # analytic transformation of one feature
-    def compute_variation_feature(self, target_feature_name, nb, args):
+    def compute_variation_at(self, target_feature_name, nb, args):
         feature_name = args[0]
         features = args[1]
         new_column = pd.DataFrame()

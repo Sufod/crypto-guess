@@ -1,6 +1,6 @@
 class Feature:
 
-    def __init__(self, name, type, vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
+    def __init__(self, name, type='float', vocabulary=None, embedding_units=None, input_units=None, input_activations=None, generate_method=None,
                  normalize=lambda feature: Feature.default_normalization(feature),
                  normalize_inflow=False):
         self._name = name

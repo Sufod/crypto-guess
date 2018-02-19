@@ -65,6 +65,9 @@ class CryptoBrain:
             #
             # Gamble on dev set.
             self.gambling(classifier, dev_features, dev_labels)
+            params['tasks']['l_price_at_0'].weight *= (i+1)/(i+2)
+            params['tasks']['l_price_at_1'].weight *= (i+2)/(i+1)
+
 
         #
         #
