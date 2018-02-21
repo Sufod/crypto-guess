@@ -198,7 +198,8 @@ class FeaturesExtractor:
         new_column = pd.DataFrame()
         current = features[target_feature_name]
         previous = features[target_feature_name].shift(-nb)
-        new_column[feature_name] = current - previous
+        if nb < 0: new_column[feature_name] = current - previous
+        else: new_column[feature_name] = previous - current
         return new_column
 
     def compute_variation_sign_at(self, target_feature_name, nb, args):
@@ -206,13 +207,16 @@ class FeaturesExtractor:
         features = args[1]
         new_column=pd.DataFrame()
         current = features[target_feature_name]
+        mean = current.mean(0)
         previous = features[target_feature_name].shift(-nb)
-        var = current - previous
+        if nb < 0: var = current - previous
+        else: var = previous - current
         # new_column[feature_name] = var.apply(lambda x: ['D', 'C'][x > 0])
-        new_column[feature_name] = var.apply(lambda x: [['D', 'DD'][x < -10], ['C', 'CC'][x > 10]][x > 0])
+        # new_column[feature_name] = var.apply(lambda x: [['D', 'DD'][x < -10], ['C', 'CC'][x > 10]][x > 0])
+        new_column[feature_name] = var.apply(lambda x: [[1, 0][x < -mean/1000], [2, 3][x > mean/1000]][x > 0])
         return new_column
 
-    def mean(self, target_feature_name, nb, args):
+    def compute_mean_on(self, target_feature_name, nb, args):
 
         feature_name = args[0]
         features = args[1]
@@ -237,7 +241,7 @@ class FeaturesExtractor:
 
         return new_column
 
-    def min(self, target_feature_name, nb, args):
+    def compute_min_on(self, target_feature_name, nb, args):
 
         feature_name = args[0]
         features = args[1]
@@ -254,7 +258,7 @@ class FeaturesExtractor:
 
         return new_column
 
-    def max(self, target_feature_name, nb, args):
+    def compute_max_on(self, target_feature_name, nb, args):
 
         feature_name = args[0]
         features = args[1]
